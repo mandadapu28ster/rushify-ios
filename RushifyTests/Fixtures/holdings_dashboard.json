@@ -1,0 +1,21 @@
+{"base_currency":"GBP","manual_basis_incomplete_count":1,"net_worth_breakdown":[{"bucket":"equity","value_base":"1000","weight_pct":"1"},{"bucket":"real_estate","value_base":"174329.36","weight_pct":"90"}],"rows":[
+ {"ticker":"INFY_US_EQ","instrument_name":"Infosys","source":"t212","broker_label":"Trading 212 · ISA","account_kind":"isa","quantity":"2","currency":"USD","market_value_base":"100","cost_base":"90","pnl_stock_base":"10"},
+ {"ticker":"VUAG_EQ","instrument_name":"Vanguard S&P 500","source":"t212","broker_label":"Trading 212 · ISA","account_kind":"isa","quantity":"3","currency":"GBP","market_value_base":"200","cost_base":"205","pnl_stock_base":"-5"},
+ {"ticker":"CASH.t212.1","source":"t212","broker_label":"Trading 212 · ISA","account_kind":"isa","asset_kind":"cash","market_value_base":"50"},
+ {"ticker":"AAPL_US_EQ","instrument_name":"Apple","source":"t212","broker_label":"Trading 212 · Invest","account_kind":"invest","quantity":"1","currency":"USD","market_value_base":"40","pnl_stock_base":"4"},
+ {"ticker":"GOOGL","instrument_name":"Alphabet","source":"snaptrade","broker_label":"AJ Bell · LISA","snaptrade_account_id":"acc-a","quantity":"4","currency":"USD","market_value_base":"300","pnl_stock_base":"100"},
+ {"ticker":"GOOGL","instrument_name":"Alphabet","source":"snaptrade","broker_label":"AJ Bell · LISA","snaptrade_account_id":"acc-b","quantity":"2","currency":"USD","market_value_base":"150","pnl_stock_base":"50"},
+ {"ticker":"BRK-B","instrument_name":"Berkshire B","source":"snaptrade","broker_label":"AJ Bell · LISA","snaptrade_account_id":"acc-a","quantity":"1","currency":"USD","market_value_base":"80","pnl_stock_base":"8"},
+ {"ticker":"CASH.snaptrade.a","source":"snaptrade","broker_label":"AJ Bell · LISA","snaptrade_account_id":"acc-a","asset_kind":"cash","market_value_base":"20"},
+ {"ticker":"CASH.csv","source":"csv","broker_label":"Trading 212 · Cash ISA (CSV)","broker_account_ref":"csv:trading212:cash_isa","asset_kind":"cash","market_value_base":"5000"},
+ {"ticker":"MZ1","instrument_name":"Monzo · Current account","source":"monzo","broker_label":"Monzo","asset_kind":"cash","market_value_base":"181.04","broker_account_ref":"monzo:acc_1"},
+ {"ticker":"MZ2","instrument_name":"Monzo · Young account","source":"monzo","broker_label":"Monzo","asset_kind":"cash","account_kind":"young","market_value_base":"104.00","broker_account_ref":"monzo:acc_2"},
+ {"ticker":"MZ3","instrument_name":"Monzo · Savings","source":"monzo","broker_label":"Monzo","asset_kind":"cash","account_kind":"savings","market_value_base":"900.00","broker_account_ref":"monzo:acc_3"},
+ {"ticker":"MZ4","instrument_name":"Monzo · Bills (Current account)","source":"monzo","broker_label":"Monzo","asset_kind":"cash","account_kind":"pot","market_value_base":"200.00","broker_account_ref":"monzo:pot:p1"},
+ {"ticker":"MSFT","instrument_name":"Microsoft","source":"manual","broker_label":"Hargreaves","manual_broker_name":"Hargreaves","manual_holding_id":11,"quantity":"1","currency":"USD","market_value_base":"60","cost_base":"50","pnl_stock_base":"10","purchase_date":"2025-01-02","cost_base_gbp":"50","pnl_currency_effect":"1.5"},
+ {"ticker":"MSFT","instrument_name":"Microsoft","source":"manual","broker_label":"Hargreaves","manual_broker_name":"Hargreaves","manual_holding_id":12,"quantity":"2","currency":"USD","market_value_base":"120","pnl_stock_base":"20"},
+ {"ticker":"OLDM","instrument_name":"Old manual","source":"manual","broker_label":"Hargreaves","manual_broker_name":"Hargreaves","manual_holding_id":13,"quantity":"0","market_value_base":"0","sold_out_at":"2026-03-01"},
+ {"ticker":"NWRE.1","manual_holding_id":1,"instrument_name":"Living Home","source":"manual","broker_label":"Manual entry","asset_kind":"real_estate","market_value_base":"174329.36"},
+ {"ticker":"NWCASH.3","manual_holding_id":2,"instrument_name":"Zopa Bank · Cash ISA","source":"manual","broker_label":"Zopa Bank","manual_broker_name":"Zopa Bank","asset_kind":"cash","market_value_base":"13242"},
+ {"ticker":"NWOTH.12","manual_holding_id":4,"instrument_name":"Britannia Gold","source":"manual","broker_label":"Manual entry","asset_kind":"other","market_value_base":"3500"}
+]}

@@ -1,0 +1,13 @@
+{"base_currency":"GBP","total_market_value_base":"1000.50","broker_listed_market_value_base":"1000.50","manual_listed_market_value_base":null,
+ "total_cost_base":"800.25","total_pnl_base":"200.25","total_realised_pnl_base":"-10.10","portfolio_xirr_annual":"0.1079","portfolio_xirr_note":"note",
+ "dividend_income_total_base":"12.00","dividend_income_broker_cash_base":"15.00","brand_new_field_from_future":{"a":1},
+ "sector_allocation":[{"sector":"Technology","value_base":"600.30","weight_pct":"60.0"},{"sector":"Health","value_base":"400.20","weight_pct":"40.0"}],
+ "rows":[
+  {"ticker":"AAA","instrument_name":"Alpha Corp","source":"snaptrade","broker_label":"Broker X · LISA","snaptrade_account_id":"acc-1","sector":"Technology","quantity":"2.50000000","avg_price":"100.00","current_price":"120.00","currency":"USD","market_value_base":"600.30","cost_base":"500.00","pnl_stock_base":"100.30","pe_ratio":"15.2","dividend_yield":"0.0459","roe":"0.32","debt_to_equity":"9.5","profit_margin":"16.37","asset_kind":null,"quote_type":"EQUITY"},
+  {"ticker":"BBB","instrument_name":"Beta plc","source":"snaptrade","broker_label":"Broker X · LISA","snaptrade_account_id":"acc-2","sector":"Health","quantity":"1","market_value_base":"400.20","cost_base":"300.25","pnl_stock_base":"99.95","quote_type":"EQUITY"},
+  {"ticker":"CASH.1","source":"snaptrade","broker_label":"Broker X · LISA","snaptrade_account_id":"acc-2","asset_kind":"cash","market_value_base":"50.00"},
+  {"ticker":"NWRE.1","instrument_name":"Home","source":"manual","broker_label":"Manual entry","asset_kind":"real_estate","market_value_base":"100000.00"},
+  {"ticker":"OLD","source":"manual","manual_holding_id":99,"broker_label":"Hargreaves","quantity":"0","market_value_base":"1.00","sold_out_at":"2026-01-01"}
+ ],
+ "net_worth_total_base":"101450.50","net_worth_breakdown":[{"bucket":"equity","value_base":"1000.50","weight_pct":"1.0"},{"bucket":"real_estate","value_base":"100000.00","weight_pct":"98.6"}],
+ "ticker_map_attention_count":2,"listed_eod_close_as_of":null,"as_of":"2026-10-17T11:55:49.778767Z"}
