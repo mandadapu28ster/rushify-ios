@@ -150,58 +150,77 @@ struct PerformanceLineChart: View {
         return xLabels[Int(v)]
     }
 
-    var body: some View {
-        let n = xLabels.count
-        let b = PerformanceChartMath.lineBounds(lines.map { $0.values })
-        let step = PerformanceChartMath.labelStep(n)
-        let xs = stride(from: 0, to: n, by: step).map(Double.init)
-        Group {
-            if n < 2 { Color.clear.frame(height: height) } else {
-                Chart {
-                    ForEach(Array(lines.enumerated()), id: \.offset) { li, ln in
-                        let segs = PerformanceChartMath.segments(ln.values)
-                        ForEach(Array(segs.enumerated()), id: \.offset) { si, seg in
-                            ForEach(seg) { pt in
-                                LineMark(x: .value("x", pt.i), y: .value(ln.name, pt.v), series: .value("series", "\(li)-\(si)"))
-                                    .foregroundStyle(ln.color)
-                                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, dash: ln.dashed ? [7, 5] : []))
-                            }
-                        }
-                    }
-                    if let s = selected, xLabels.indices.contains(s) {
-                        RuleMark(x: .value("Cursor", s)).foregroundStyle(RColors.text.opacity(0.5)).lineStyle(StrokeStyle(lineWidth: 1))
-                        ForEach(Array(lines.enumerated()), id: \.offset) { _, ln in
-                            if ln.values.indices.contains(s), let v = ln.values[s] {
-                                PointMark(x: .value("x", s), y: .value(ln.name, v)).foregroundStyle(ln.color).symbolSize(40)
-                            }
-                        }
-                    }
+    private var n: Int { xLabels.count }
+    private var bounds: (lo: Double, hi: Double) { PerformanceChartMath.lineBounds(lines.map { $0.values }) }
+    private var xTicks: [Double] { stride(from: 0, to: n, by: PerformanceChartMath.labelStep(n)).map(Double.init) }
+
+    // The chart is built from small pieces: one large expression takes older Swift compilers too long to type-check.
+    @ChartContentBuilder private var lineMarks: some ChartContent {
+        ForEach(Array(lines.enumerated()), id: \.offset) { li, ln in
+            let segs = PerformanceChartMath.segments(ln.values)
+            ForEach(Array(segs.enumerated()), id: \.offset) { si, seg in
+                ForEach(seg) { pt in
+                    LineMark(x: .value("x", pt.i), y: .value(ln.name, pt.v), series: .value("series", "\(li)-\(si)"))
+                        .foregroundStyle(ln.color)
+                        .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round, dash: ln.dashed ? [7, 5] : []))
                 }
-                .chartXScale(domain: 0...Double(n - 1), range: .plotDimension(padding: 6))
-                .chartYScale(domain: b.lo...b.hi)
-                .chartXAxis {
-                    AxisMarks(values: xs) { v in
-                        AxisValueLabel(xText(v.as(Double.self))).font(.system(size: 10)).foregroundStyle(RColors.muted)
-                    }
-                }
-                .chartYAxis {
-                    AxisMarks(values: PerformanceChartMath.ticks(b.lo, b.hi, 3)) { v in
-                        AxisGridLine().foregroundStyle(RColors.variant)
-                        AxisValueLabel { if let d = v.as(Double.self) { Text(Fmt.compact(d)).font(.system(size: 10)).foregroundStyle(RColors.muted) } }
-                    }
-                }
-                .chartOverlay { proxy in PerformanceSlotOverlay(proxy: proxy, count: n, drag: true, onSelect: onSelect) }
-                .frame(height: height)
             }
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(description)
-        .accessibilityValue(PerformanceChartText.lines(xLabels, lines, at: selected))
-        .accessibilityIdentifier(identifier)
-        .accessibilityAdjustableAction { dir in
-            guard n > 0 else { return }
-            let cur = selected ?? n - 1
-            onSelect(dir == .increment ? min(n - 1, cur + 1) : max(0, cur - 1))
+    }
+
+    @ChartContentBuilder private var cursorMarks: some ChartContent {
+        if let s = selected, xLabels.indices.contains(s) {
+            RuleMark(x: .value("Cursor", s)).foregroundStyle(RColors.text.opacity(0.5)).lineStyle(StrokeStyle(lineWidth: 1))
+            ForEach(Array(lines.enumerated()), id: \.offset) { _, ln in
+                if ln.values.indices.contains(s), let v = ln.values[s] {
+                    PointMark(x: .value("x", s), y: .value(ln.name, v)).foregroundStyle(ln.color).symbolSize(40)
+                }
+            }
         }
+    }
+
+    @AxisContentBuilder private var xAxisMarks: some AxisContent {
+        AxisMarks(values: xTicks) { v in
+            AxisValueLabel(xText(v.as(Double.self))).font(.system(size: 10)).foregroundStyle(RColors.muted)
+        }
+    }
+
+    @AxisContentBuilder private var yAxisMarks: some AxisContent {
+        AxisMarks(values: PerformanceChartMath.ticks(bounds.lo, bounds.hi, 3)) { v in
+            AxisGridLine().foregroundStyle(RColors.variant)
+            AxisValueLabel { yLabel(v.as(Double.self)) }
+        }
+    }
+
+    @ViewBuilder private func yLabel(_ d: Double?) -> some View {
+        if let d { Text(Fmt.compact(d)).font(.system(size: 10)).foregroundStyle(RColors.muted) }
+    }
+
+    private var chart: some View {
+        let lo = bounds.lo, hi = bounds.hi, count = n
+        return Chart { lineMarks; cursorMarks }
+            .chartXScale(domain: 0...Double(count - 1), range: .plotDimension(padding: 6))
+            .chartYScale(domain: lo...hi)
+            .chartXAxis { xAxisMarks }
+            .chartYAxis { yAxisMarks }
+            .chartOverlay { proxy in PerformanceSlotOverlay(proxy: proxy, count: count, drag: true, onSelect: onSelect) }
+            .frame(height: height)
+    }
+
+    var body: some View {
+        content
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(description)
+            .accessibilityValue(PerformanceChartText.lines(xLabels, lines, at: selected))
+            .accessibilityIdentifier(identifier)
+            .accessibilityAdjustableAction { dir in
+                guard n > 0 else { return }
+                let cur = selected ?? n - 1
+                onSelect(dir == .increment ? min(n - 1, cur + 1) : max(0, cur - 1))
+            }
+    }
+
+    @ViewBuilder private var content: some View {
+        if n < 2 { Color.clear.frame(height: height) } else { chart }
     }
 }
