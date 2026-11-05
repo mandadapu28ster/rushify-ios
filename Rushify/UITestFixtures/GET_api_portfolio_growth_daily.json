@@ -1,0 +1,5 @@
+{"base_currency":"GBP","granularity":"monthly","compact":true,"periods":[],
+ "equity_daily":[
+  {"as_of":"2026-10-28","listed_equity_mv_end_base":"1000","invested_capital_end_base":"800","brokers":[{"broker_label":"AJ Bell · LISA","listed_equity_mv_end_base":"600","invested_capital_end_base":"500"},{"broker_label":"Hargreaves","listed_equity_mv_end_base":"400","invested_capital_end_base":"300"}]},
+  {"as_of":"2026-10-29","listed_equity_mv_end_base":"1100","invested_capital_end_base":"800","brokers":[{"broker_label":"AJ Bell · LISA","listed_equity_mv_end_base":"660","invested_capital_end_base":"500"},{"broker_label":"Hargreaves","listed_equity_mv_end_base":"440","invested_capital_end_base":"300"}]},
+  {"as_of":"2026-10-30","listed_equity_mv_end_base":"1200","invested_capital_end_base":"800","brokers":[{"broker_label":"AJ Bell · LISA","listed_equity_mv_end_base":"720","invested_capital_end_base":"500"},{"broker_label":"Hargreaves","listed_equity_mv_end_base":"480","invested_capital_end_base":"300"}]}]}

@@ -6,6 +6,12 @@ final class AppContainer: ObservableObject {
     let repo: Repository
 
     init(session: SessionManager? = nil, cache: CacheStore? = nil) {
+        if let t = UITestMode.parts() {   // debug-only UI-test scenario: canned responses, no real storage
+            self.session = t.session
+            api = ApiClient(session: t.session, urlSession: t.urlSession)
+            repo = Repository(api: api, session: t.session, cache: t.cache)
+            return
+        }
         let s = session ?? SessionManager(store: UserDefaultsStore(), secrets: KeychainStore())
         self.session = s
         api = ApiClient(session: s)

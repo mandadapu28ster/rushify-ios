@@ -38,6 +38,10 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO
+      configs:
+        Release:
+          # Canned UI-test responses ship in debug builds only.
+          EXCLUDED_SOURCE_FILE_NAMES: "UITestFixtures/*"
   RushifyTests:
     type: bundle.unit-test
     platform: iOS
@@ -49,11 +53,23 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.rushify.mobile.tests
         GENERATE_INFOPLIST_FILE: YES
+  RushifyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: RushifyUITests
+    dependencies:
+      - target: Rushify
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.rushify.mobile.uitests
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   Rushify:
     build:
       targets:
         Rushify: all
         RushifyTests: [test]
+        RushifyUITests: [test]
     test:
-      targets: [RushifyTests]
+      targets: [RushifyTests, RushifyUITests]

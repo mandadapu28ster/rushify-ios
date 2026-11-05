@@ -1,0 +1,2 @@
+[{"id":1,"asset_kind":"real_estate","label":"Living Home","broker_name":null,"home_value":"350000","mortgage_balance":"120000","currency":"GBP","opened_date":"2020-01-01","opening_value_gbp":"300000","show_on_wealth_chart":true,"chart_eligible":true,"snapshot_count":6},
+ {"id":11,"asset_kind":"listed","symbol":"MSFT","label":"Microsoft","broker_name":"Hargreaves","account_kind":"isa","quantity":"1","currency":"GBP","purchase_date":"2025-01-02","cost_base_gbp":"50"}]

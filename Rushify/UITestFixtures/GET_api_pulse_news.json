@@ -1,0 +1,4 @@
+{"groups":[
+ {"key":"__market__","symbol":null,"label":"Market & macro","headline_count":1,"items":[{"id":1,"source":"yahoo","title":"Markets rally on rate hopes","url":"https://news.example.com/a","publisher":"Reuters","published_at":"2026-10-31T09:28:00Z","summary":"Stocks rose as traders priced in lower rates.","symbols":[]}]},
+ {"key":"AAA","symbol":"AAA","label":"Alpha Corp","headline_count":2,"items":[{"id":2,"source":"google","title":"Alpha beats estimates","url":"https://news.example.com/b","publisher":"TipRanks","published_at":"2026-10-30T09:00:00Z","summary":"Alpha beats estimates","symbols":["AAA"]},{"id":3,"source":"yahoo","title":"Alpha raises guidance","url":"https://news.example.com/c","publisher":"Reuters","published_at":"2026-10-29T09:00:00Z","summary":"Guidance raised for the year.","symbols":["AAA"]}]}],
+ "last_synced_at":"2026-10-31T09:00:00Z","stale":false,"cached_only":false,"symbols":["AAA"]}

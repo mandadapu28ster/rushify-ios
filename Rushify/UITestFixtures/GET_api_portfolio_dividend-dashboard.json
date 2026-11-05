@@ -1,0 +1,6 @@
+{"base_currency":"GBP","granularity":"monthly","forecast_method":"Trailing 12-month average. Rough guide only.","symbols":["AAA","BBB"],
+ "series":[
+  {"label":"Aug 2026","kind":"historical","total_base":"100.00","growth_pct_prior":null,"forecast_zone":false,"layers":[{"ticker":"AAA","layer":"actual","amount_base":"60.00"},{"ticker":"BBB","layer":"actual","amount_base":"40.00"}]},
+  {"label":"Sep 2026","kind":"historical","total_base":"50.00","growth_pct_prior":"-50.0","forecast_zone":false,"layers":[{"ticker":"AAA","layer":"actual","amount_base":"50.00"}]},
+  {"label":"Oct 2026","kind":"current_partial","total_base":"32.83","growth_pct_prior":"-34.3","forecast_zone":false,"layers":[{"ticker":"BBB","layer":"actual","amount_base":"7.67"},{"ticker":"AAA","layer":"actual","amount_base":"20.00"},{"ticker":"AAA","layer":"forecast","amount_base":"5.16"}]},
+  {"label":"Next 6 mo est.","kind":"forecast_forward","total_base":"436.10","growth_pct_prior":null,"forecast_zone":true,"layers":[{"ticker":"AAA","layer":"forecast","amount_base":"300.00"},{"ticker":"BBB","layer":"forecast","amount_base":"136.10"}]}]}
