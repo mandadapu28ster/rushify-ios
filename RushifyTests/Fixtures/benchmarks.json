@@ -1,0 +1,2 @@
+{"range":"month","base_currency":"GBP","portfolio_return_pct":"7.33","ftse100_return_pct":"2.95","sp100_return_pct":"3.90","period_total_pnl_base":"849.00","period_price_pnl_base":"400.00","period_fx_pnl_base":"61.00","period_cross_pnl_base":"388.00","empty_portfolio":false,
+ "series":[{"date":"2026-07-14","portfolio_index":100.0,"ftse100_index":100.0,"sp100_index":100.0},{"date":"2026-07-15","portfolio_index":101.5,"ftse100_index":100.2,"sp100_index":99.8},{"date":"2026-07-16","portfolio_index":107.33,"ftse100_index":102.95,"sp100_index":null}]}

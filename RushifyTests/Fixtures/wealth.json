@@ -1,0 +1,7 @@
+{"base_currency":"GBP","min_snapshots_for_chart":5,"min_hold_days_for_chart":365,"assets":[
+ {"manual_holding_id":1,"label":"Living Home","asset_kind":"real_estate","show_on_wealth_chart":true,"snapshot_count":6,"chart_eligible":true,"exited":false,
+  "snapshots":[{"as_of":"2025-01-01","value_gbp":"100000","source":"manual"},{"as_of":"2025-07-01","value_gbp":"105000","source":"manual"},{"as_of":"2026-01-01","value_gbp":"110000","source":"manual"}]},
+ {"manual_holding_id":2,"label":"Zopa Bank · Cash ISA","asset_kind":"cash","show_on_wealth_chart":true,"snapshot_count":6,"chart_eligible":true,"exited":false,
+  "snapshots":[{"as_of":"2025-03-01","value_gbp":"5000","source":"manual"},{"as_of":"2026-01-01","value_gbp":"6000","source":"manual"}]},
+ {"manual_holding_id":3,"label":"Chip · Cash ISA","asset_kind":"cash","show_on_wealth_chart":true,"snapshot_count":1,"chart_eligible":false,"exited":false,"snapshots":[]}],
+ "combined_series":[]}

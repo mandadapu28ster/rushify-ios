@@ -74,4 +74,25 @@ enum Fmt {
         return f.string(from: d)
     }
     static func stamp(iso: String?, zone: TimeZone = .current) -> String { stamp(parseInstant(iso), zone: zone) }
+
+    /// Revenue / market cap style: 1.23T, 4.5B, 12.3M.
+    static func abbreviate(_ v: Decimal?) -> String {
+        guard let v else { return dash }
+        let a = abs(v)
+        let (div, suffix): (Decimal, String)
+        if a >= 1_000_000_000_000 { (div, suffix) = (1_000_000_000_000, "T") }
+        else if a >= 1_000_000_000 { (div, suffix) = (1_000_000_000, "B") }
+        else if a >= 1_000_000 { (div, suffix) = (1_000_000, "M") }
+        else { return group(v, min: 0, max: 0) }
+        return group(v / div, min: 2, max: 2) + suffix
+    }
+
+    /// Axis labels: 1.2k, 3.4M, 950.
+    static func compact(_ v: Double) -> String {
+        let a = abs(v), sign = v < 0 ? "-" : ""
+        func trim(_ x: Double) -> String { x >= 100 || x == x.rounded() ? String(Int(x)) : String(format: "%.1f", x).replacingOccurrences(of: ".0", with: "") }
+        if a >= 1_000_000 { return sign + trim(a / 1_000_000) + "M" }
+        if a >= 1_000 { return sign + trim(a / 1_000) + "k" }
+        return sign + trim(a)
+    }
 }

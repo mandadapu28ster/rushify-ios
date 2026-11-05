@@ -9,6 +9,7 @@ struct Cached<T> {
 final class Repository {
     let api: ApiClient
     let session: SessionManager
+    let events = DataEvents()
     private let cache: CacheStore
     private let clock: () -> Date
 
