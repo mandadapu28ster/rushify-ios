@@ -56,9 +56,9 @@ struct MainTabs: View {
             TabView {
                 HomeView(repo: container.repo, session: session)
                     .tabItem { Label("Home", systemImage: "house.fill") }
-                ComingSoonView(title: "Pulse", note: "Radar, news and watchlists arrive in an upcoming update.")
+                PulseScreen(repo: container.repo, session: session)
                     .tabItem { Label("Pulse", systemImage: "star.fill") }
-                MoreView(session: session, hideBalances: $hide) {
+                MoreView(repo: container.repo, session: session, hideBalances: $hide) {
                     container.session.logout()
                     Task { await container.repo.wipeCache() }
                 }
@@ -66,5 +66,7 @@ struct MainTabs: View {
             }
             .tint(RColors.accent)
         }
+        // Like the web: when the app opens, refresh Monzo if the server says its last sync is older than 6 hours.
+        .task(id: session.state.cacheScope) { _ = await syncMonzoRefreshIfStale(repo: container.repo) }
     }
 }

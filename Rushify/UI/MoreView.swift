@@ -13,21 +13,40 @@ struct ComingSoonView: View {
     }
 }
 
+enum MoreDest: String, CaseIterable, Hashable {
+    case holdings, sync, ai, performance, corporate, connections, addHolding, password
+    var title: String {
+        switch self {
+        case .holdings: return "Holdings"
+        case .sync: return "Sync"
+        case .ai: return "AI assistant"
+        case .performance: return "Performance & income"
+        case .corporate: return "Corporate actions"
+        case .connections: return "Connections & keys"
+        case .addHolding: return "Add holding"
+        case .password: return "Change password"
+        }
+    }
+    var subtitle: String {
+        switch self {
+        case .holdings: return "Positions by account, lots, sectors"
+        case .sync: return "Trading 212, SnapTrade and Monzo"
+        case .ai: return "Ask about your portfolio"
+        case .performance: return "Growth, benchmarks, dividends"
+        case .corporate: return "Splits, mergers, symbols to confirm"
+        case .connections: return "Trading 212, SnapTrade, Monzo and AI status"
+        case .addHolding: return "Stock or ETF lot, property, cash savings, other asset"
+        case .password: return "Sign in again with a new password"
+        }
+    }
+}
+
 struct MoreView: View {
+    let repo: Repository
     @ObservedObject var session: SessionManager
     @Binding var hideBalances: Bool
     var onSignOut: () -> Void
 
-    private let rows: [(title: String, subtitle: String)] = [
-        ("Holdings", "Positions by account, lots, sectors"),
-        ("Sync", "Trading 212, SnapTrade and Monzo"),
-        ("AI assistant", "Ask about your portfolio"),
-        ("Performance & income", "Growth, benchmarks, dividends"),
-        ("Corporate actions", "Splits, mergers, symbols to confirm"),
-        ("Connections & keys", "Trading 212, SnapTrade, Monzo and AI status"),
-        ("Add holding", "Stock or ETF lot, property, cash savings, other asset"),
-        ("Change password", "Sign in again with a new password"),
-    ]
     private var appVersion: String {
         let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         let b = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
@@ -46,19 +65,18 @@ struct MoreView: View {
                         }
                     }
                     RCard {
-                        ForEach(Array(rows.enumerated()), id: \.offset) { i, r in
-                            NavigationLink { ComingSoonView(title: r.title) } label: {
+                        ForEach(MoreDest.allCases, id: \.self) { d in
+                            NavigationLink(value: d) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(r.title).font(.system(size: 16)).foregroundStyle(RColors.text)
-                                        Muted(r.subtitle)
+                                        Text(d.title).font(.system(size: 16)).foregroundStyle(RColors.text)
+                                        Muted(d.subtitle)
                                     }
                                     Spacer()
-                                    Text("Soon").font(.system(size: 11, weight: .medium)).foregroundStyle(RColors.muted)
                                     Image(systemName: "chevron.right").font(.system(size: 12)).foregroundStyle(RColors.muted)
                                 }.padding(.vertical, 8).contentShape(Rectangle())
                             }
-                            .buttonStyle(.plain).accessibilityIdentifier("menu_\(i)")
+                            .buttonStyle(.plain).accessibilityIdentifier("menu_\(d.rawValue)")
                         }
                     }
                     RCard {
@@ -83,6 +101,25 @@ struct MoreView: View {
                 .padding(16)
             }
             .background(RColors.bg)
+            .navigationDestination(for: MoreDest.self) { destination($0) }
+        }
+    }
+
+    @ViewBuilder private func destination(_ d: MoreDest) -> some View {
+        switch d {
+        case .holdings:
+            HoldingsScreen(repo: repo, session: session, holdingActions: manualHoldingActions(repo: repo), showTitle: false)
+                .background(RColors.bg).navigationTitle("Holdings").navigationBarTitleDisplayMode(.inline)
+        case .sync:
+            SyncScreen(repo: repo, session: session, showTitle: false).background(RColors.bg).navigationTitle("Sync").navigationBarTitleDisplayMode(.inline)
+        case .ai: AiScreen(repo: repo, session: session).background(RColors.bg)
+        case .performance: PerformanceScreen(repo: repo, session: session).background(RColors.bg)
+        case .corporate: CorporateScreen(repo: repo, session: session).background(RColors.bg)
+        case .connections: ConnectionsScreen(repo: repo, session: session).background(RColors.bg)
+        case .addHolding: AddHoldingScreen(repo: repo).background(RColors.bg).navigationTitle("Add holding").navigationBarTitleDisplayMode(.inline)
+        case .password:
+            // The screen signs the user out itself once the password changed (the old token is revoked).
+            ChangePasswordScreen(repo: repo, session: session, onChanged: {}).background(RColors.bg)
         }
     }
 }

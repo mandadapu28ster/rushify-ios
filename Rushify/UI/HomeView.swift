@@ -4,20 +4,40 @@ import SwiftUI
 let freshnessNote = "After your equity data is synced from a broker or added manually, the backend usually needs 12-24 hours to fetch the latest market updates. Charts and dashboard figures roll forward on that timeline."
 let adminReminder = "You're signed in as an admin. Admin tools are web-only. For your portfolio on this phone, sign in with your personal account."
 
+enum HomeDest: Hashable { case performance, corporate }
+
 struct HomeView: View {
     let repo: Repository
     @ObservedObject var session: SessionManager
+    @ObservedObject private var events: DataEvents
     @StateObject private var vm: CachedLoader<Dashboard>
+    @StateObject private var wealth: HoldingsHomeWealthLoader
     @Environment(\.hideBalances) private var hide
     @State private var investmentsOpen = true
     @State private var openSection: String?
+    @State private var dismissBusy = false
+    @State private var dismissError: String?
 
     init(repo: Repository, session: SessionManager) {
-        self.repo = repo; self.session = session
+        self.repo = repo; self.session = session; events = repo.events
+        _wealth = StateObject(wrappedValue: HoldingsHomeWealthLoader(repo: repo))
         _vm = StateObject(wrappedValue: CachedLoader(read: { await repo.dashboardCached() }, fetch: { try await repo.dashboard() }))
     }
 
     var body: some View {
+        NavigationStack {
+            scroll
+                .navigationDestination(for: HomeDest.self) { d in
+                    switch d {
+                    case .performance: PerformanceScreen(repo: repo, session: session).background(RColors.bg)
+                    case .corporate: CorporateScreen(repo: repo, session: session).background(RColors.bg)
+                    }
+                }
+                .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    private var scroll: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Home").font(.system(size: 28, weight: .semibold)).foregroundStyle(RColors.text).accessibilityIdentifier("home_title")
@@ -34,6 +54,8 @@ struct HomeView: View {
         .refreshable { await vm.refresh() }
         .background(RColors.bg)
         .task { vm.load() }
+        .task(id: vm.state.data?.fetchedAt) { if let d = vm.state.data?.value, HoldingsHomeSummaries.wealthShouldLoad(rows: d.rows) { wealth.load() } }
+        .onChange(of: events.version) { _, _ in Task { await vm.refresh(); await wealth.refresh() } }
     }
 
     private func toggle(_ id: String) { openSection = openSection == id ? nil : id }
@@ -52,6 +74,23 @@ struct HomeView: View {
                         expanded: investmentsOpen, onToggle: { investmentsOpen.toggle() }) { investments(d) }
         alerts(d)
         pies(d)
+        if let sum = HoldingsHomeSummaries.positions(rows: d.rows) {
+            section("positions", "Position size: cost vs gain/loss", sum) { HoldingsHomePositionSizeContent(rows: d.rows, ccy: ccy) }
+        }
+        if let sum = HoldingsHomeSummaries.custodian(rows: d.rows, ccy: ccy, hide: hide) {
+            section("custodian", "Net worth by broker", sum) { HoldingsHomeCustodianContent(rows: d.rows, ccy: ccy) }
+        }
+        if HoldingsHomeSummaries.wealthShouldLoad(rows: d.rows), wealth.isVisible, let sum = wealth.summary(hide: hide) {
+            section("wealth", "Wealth over time", sum) { HoldingsHomeWealthContent(loader: wealth) }
+        }
+        NavigationLink(value: HomeDest.performance) {
+            RCard {
+                SectionTitle("Performance & income")
+                Muted("Growth attribution, benchmark comparison vs FTSE 100 and S&P 100, dividend income and forecast.")
+                Text("Open charts →").font(.system(size: 13)).foregroundStyle(RColors.accent).padding(.top, 4)
+            }
+        }
+        .buttonStyle(.plain).accessibilityIdentifier("open_performance")
         section("freshness", "Data freshness", "How recent market data and FX are for your synced holdings.") {
             Muted(freshnessNote)
             Muted("Sync or manual add → 12–24 hr pipeline → dashboards and benchmarks refresh")
@@ -100,35 +139,62 @@ struct HomeView: View {
                 if d.tickerMapAttentionCount > 0 {
                     Text("Listings need your attention").font(.system(size: 14, weight: .semibold)).foregroundStyle(RColors.text)
                     Muted("\(Fmt.plural(d.tickerMapAttentionCount, "unresolved ticker")) from your broker. Open Corporate actions → Symbols to confirm and enter the listing to use.")
+                    Muted("Dismiss hides this temporarily; the reminder returns until the symbols are resolved.")
+                    if let e = dismissError { Banner(text: "Could not dismiss: \(e)", color: RColors.loss) }
+                    HStack(spacing: 10) {
+                        NavigationLink(value: HomeDest.corporate) {
+                            Text("Review symbols").font(.system(size: 14, weight: .semibold)).foregroundStyle(RColors.bg)
+                                .padding(.horizontal, 16).padding(.vertical, 9).background(RColors.accent, in: Capsule())
+                        }.buttonStyle(.plain).accessibilityIdentifier("review_symbols")
+                        Button(dismissBusy ? "…" : "Dismiss") { dismissTickers() }
+                            .font(.system(size: 14)).foregroundStyle(RColors.accent).disabled(dismissBusy).accessibilityIdentifier("dismiss_symbols")
+                    }
                 }
             }
         }
     }
 
+    /// "Portfolio & net worth": the sector donut with drill-down plus the net worth split by asset class.
     @ViewBuilder private func pies(_ d: Dashboard) -> some View {
-        if !d.netWorthBreakdown.isEmpty {
-            let ccy = d.baseCurrency
-            section("pies", "Portfolio & net worth", "Net worth split into \(Fmt.plural(d.netWorthBreakdown.count, "asset class", "asset classes")).") {
-                Muted("Net worth by asset class")
-                HStack(spacing: 16) {
-                    Chart(Array(d.netWorthBreakdown.enumerated()), id: \.offset) { i, b in
-                        SectorMark(angle: .value("Value", max(0.0, (b.valueBase as NSDecimalNumber?)?.doubleValue ?? 0)), innerRadius: .ratio(0.62), angularInset: 1)
-                            .foregroundStyle(RColors.chart[i % RColors.chart.count])
-                    }
-                    .frame(width: 130, height: 130)
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(Array(d.netWorthBreakdown.enumerated()), id: \.offset) { i, b in
-                            HStack(spacing: 8) {
-                                Circle().fill(RColors.chart[i % RColors.chart.count]).frame(width: 10, height: 10)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(HomeLogic.bucketLabel(b.bucket)).font(.system(size: 13)).foregroundStyle(RColors.text)
-                                    Num("\(Fmt.money(b.valueBase, ccy, hide: hide, scale: 0)) · \(Fmt.percent(b.weightPct, scale: 1))", color: RColors.muted, size: 11)
+        let ccy = d.baseCurrency
+        let sectorSummary = HoldingsHomeSummaries.sectors(rows: d.rows, ccy: ccy, hide: hide)
+        if sectorSummary != nil || !d.netWorthBreakdown.isEmpty {
+            section("pies", "Portfolio & net worth", sectorSummary ?? "Sector donut and optional net worth split.") {
+                if sectorSummary != nil {
+                    Muted("Portfolio by sector")
+                    HoldingsHomeSectorsContent(rows: d.rows, ccy: ccy)
+                }
+                if !d.netWorthBreakdown.isEmpty {
+                    Muted("Net worth by asset class")
+                    HStack(spacing: 16) {
+                        Chart(Array(d.netWorthBreakdown.enumerated()), id: \.offset) { i, b in
+                            SectorMark(angle: .value("Value", max(0.0, (b.valueBase as NSDecimalNumber?)?.doubleValue ?? 0)), innerRadius: .ratio(0.62), angularInset: 1)
+                                .foregroundStyle(RColors.chart[i % RColors.chart.count])
+                        }
+                        .frame(width: 130, height: 130)
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(Array(d.netWorthBreakdown.enumerated()), id: \.offset) { i, b in
+                                HStack(spacing: 8) {
+                                    Circle().fill(RColors.chart[i % RColors.chart.count]).frame(width: 10, height: 10)
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(HomeLogic.bucketLabel(b.bucket)).font(.system(size: 13)).foregroundStyle(RColors.text)
+                                        Num("\(Fmt.money(b.valueBase, ccy, hide: hide, scale: 0)) · \(Fmt.percent(b.weightPct, scale: 1))", color: RColors.muted, size: 11)
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private func dismissTickers() {
+        dismissBusy = true; dismissError = nil
+        Task {
+            defer { dismissBusy = false }
+            do { try await repo.miscDismissTickerBanner(); await vm.refresh() }
+            catch { dismissError = (error as? ApiError)?.message ?? error.localizedDescription }
         }
     }
 }

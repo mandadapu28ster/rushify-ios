@@ -90,7 +90,6 @@ struct HoldingsHomeSectorsContent: View {
                 if let current { detail(current) } else { overview(sectors, total) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityIdentifier("sector_section")
         }
     }
 
@@ -181,7 +180,6 @@ struct HoldingsHomePositionSizeContent: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityIdentifier("position_section")
         }
     }
 }
@@ -219,7 +217,6 @@ struct HoldingsHomeCustodianContent: View {
                 legend(list).padding(.top, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityIdentifier("custodian_section")
         }
     }
 
@@ -348,7 +345,6 @@ struct HoldingsHomeWealthContent: View {
                 Muted("Manual property (net equity), cash savings and other assets. Broker cash is excluded. Opt a line out under Holdings → Edit values.").padding(.top, 6)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityIdentifier("wealth_section")
         }
     }
 }

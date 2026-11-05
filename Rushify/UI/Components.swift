@@ -116,9 +116,9 @@ struct HomeCollapsible<Content: View>: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("section_toggle_\(id)")
             if expanded {
-                VStack(alignment: .leading, spacing: 8) { content() }.padding(.top, 8).accessibilityIdentifier("section_body_\(id)")
+                VStack(alignment: .leading, spacing: 8) { content() }.padding(.top, 8)
+                    .accessibilityElement(children: .contain).accessibilityIdentifier("section_body_\(id)")
             }
         }
-        .accessibilityIdentifier("section_\(id)")
     }
 }
