@@ -8,14 +8,17 @@ Requires iOS 17+, Xcode 16+.
 
 ## Status
 
+Every screen of the Android app is ported.
+
 | Area | State |
 | --- | --- |
-| Connect to a server (https, or http with a confirmation), sign in, session expiry | done |
-| Home: net worth, Investments, alerts, asset classes, data freshness (web-style collapsible sections) | done |
-| Cache-first loading, offline banner, hide balances, sign out | done |
-| Holdings, Pulse (radar, news, watchlists), Sync (Trading 212, SnapTrade, Monzo) | planned |
-| Performance & income, Corporate actions, Connections & keys, Change password, AI assistant | planned |
-| Add/edit holdings, sector override, record sale | planned |
+| Connect to a server (https, or http with a confirmation), sign in, session expiry, sign out, hide balances | done |
+| Home: net worth, Investments, alerts (review symbols, dismiss), portfolio by sector, net worth by asset class, position size, net worth by broker, wealth over time, data freshness (web-style collapsible sections) | done |
+| Holdings (account groups, lots, rollups, filters, search, sold lots, details), Pulse (radar, news, watchlists), Sync (Trading 212, SnapTrade, Monzo) | done |
+| Performance & income (growth, benchmarks, dividends, daily equity), Corporate actions and symbols, Connections & keys, AI assistant, Change password | done |
+| Add holding, edit lot, record sale, remove, edit values, sector override | done |
+
+Navigation matches Android: three tabs (Home, Pulse, More); Holdings, Sync and the rest open from More.
 
 ## Build and test
 
@@ -25,10 +28,18 @@ xcodegen generate            # creates Rushify.xcodeproj from project.yml
 open Rushify.xcodeproj
 ```
 
+Unit tests (about 415, against a stubbed network) and end-to-end tests (44, the real app driven through every screen):
+
 ```bash
 xcodebuild test -project Rushify.xcodeproj -scheme Rushify \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -quiet
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:RushifyTests -quiet
+xcodebuild test -project Rushify.xcodeproj -scheme Rushify \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:RushifyUITests -quiet
 ```
+
+The end-to-end tests run the app in UI-test mode (debug builds only): `RUSHIFY_UITEST=1` signs in against canned responses from
+`Rushify/UITestFixtures` (named `<METHOD>_<path>.json`), `signedout` starts from a fresh install and `expired` makes every
+authenticated call answer 401. They never touch a real server, and the fixtures are left out of release builds.
 
 Debug builds can sign in without typing a password, for testing against a real account in the simulator:
 
@@ -42,7 +53,7 @@ This code is not compiled into release builds.
 ## Releases (builds for testers)
 
 Publishing a GitHub release (tag such as `v0.2.0`) runs the `Release iOS build` workflow. It runs the tests,
-then attaches to the release:
+then attaches to the release (the slower end-to-end tests have their own manually triggered `UI tests` workflow):
 
 - `Rushify-<version>.ipa`: unsigned device build, for sideloading (below)
 - `Rushify-simulator-<version>.zip`: simulator build (needs a Mac with Xcode)

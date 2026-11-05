@@ -214,8 +214,11 @@ final class SyncViewModelTests: XCTestCase {
     func testResumeWithoutALogIdWatchesTheHistory() async {
         stubs.routeSync(); stubs.ok("GET", "/api/sync/manual/snaptrade-running", #"{"snaptrade_manual_in_progress":true,"active_sync_log_id":null}"#)
         let vm = makeVM(); vm.load()
-        await syncWait("resumed") { vm.ui.running[.snaptrade] == true }
-        await syncWait("history shows finished") { vm.ui.running[.snaptrade] != true }
+        // "Running" is only true for an instant (the injected sleep makes polling instant), so assert on what always happens:
+        // the running endpoint was asked, the history was watched until the sync finished, and no new sync was started.
+        await syncWait("running endpoint asked") { stubs.count("GET", "/api/sync/manual/snaptrade-running") >= 1 }
+        await syncWait("history watched until finished") { stubs.count("GET", "/api/sync/history") >= 2 && vm.ui.running[.snaptrade] != true }
+        XCTAssertEqual(stubs.count("POST", "/api/snaptrade/sync/manual"), 0, "resuming never starts another sync")
     }
     func testNothingRunningMeansNothingResumed() async {
         stubs.routeSync(); let vm = makeVM(); vm.load()
