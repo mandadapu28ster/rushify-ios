@@ -227,6 +227,8 @@ enum PulseChartMath {
     /// Point for axis `i` of `n` at fraction `f` of the radius (axis 0 points up, clockwise).
     static func radarPoint(center: CGPoint, radius: Double, i: Int, n: Int, f: Double, extra: Double = 0) -> CGPoint {
         let a = -Double.pi / 2 + 2 * Double.pi * Double(i) / Double(n)
-        return CGPoint(x: center.x + (radius * f + extra) * cos(a), y: center.y + (radius * f + extra) * sin(a))
+        let d: Double = radius * f + extra          // all Double, then convert once: older compilers find mixed cos/sin ambiguous
+        let dx: Double = d * cos(a), dy: Double = d * sin(a)
+        return CGPoint(x: center.x + CGFloat(dx), y: center.y + CGFloat(dy))
     }
 }

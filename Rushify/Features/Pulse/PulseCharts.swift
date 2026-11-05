@@ -60,7 +60,7 @@ struct PulseHealthGauge: View {
                     var p = Path()
                     let steps = max(2, Int(sweep))
                     for k in 0...steps {
-                        let a = (150 + sweep * Double(k) / Double(steps)) * .pi / 180
+                        let a = CGFloat((150 + sweep * Double(k) / Double(steps)) * Double.pi / 180)   // explicit CGFloat: older compilers find cos/sin ambiguous
                         let pt = CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
                         k == 0 ? p.move(to: pt) : p.addLine(to: pt)
                     }
