@@ -168,6 +168,8 @@ struct RAuthBackground: View {
 enum RMotion {
     static let snappy = Animation.snappy(duration: 0.28)
     static let smooth = Animation.smooth(duration: 0.35)
+    /// Expanding and collapsing a section: a soft spring with no bounce, slow enough to follow with the eye.
+    static let expand = Animation.spring(response: 0.55, dampingFraction: 0.9)
     static let quick = Animation.easeOut(duration: 0.15)
     static let fade = Animation.easeInOut(duration: 0.18)
     static func standard(reduce: Bool) -> Animation { reduce ? fade : snappy }

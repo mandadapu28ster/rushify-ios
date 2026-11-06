@@ -67,7 +67,7 @@ struct HomeView: View {
         .onChange(of: events.version) { _, _ in Task { await vm.refresh(); await wealth.refresh() } }
     }
 
-    private func toggle(_ id: String) { withAnimation(.snappy(duration: 0.28)) { openSection = openSection == id ? nil : id } }
+    private func toggle(_ id: String) { withAnimation(RMotion.expand) { openSection = openSection == id ? nil : id } }
     private func section<C: View>(_ id: String, _ title: String, _ summary: String, @ViewBuilder _ content: @escaping () -> C) -> some View {
         HomeCollapsible(id: id, title: title, summary: summary, expanded: openSection == id, onToggle: { toggle(id) }, content: content)
     }
@@ -80,7 +80,7 @@ struct HomeView: View {
             Muted("\(Fmt.plural(HomeLogic.listedPositionCount(d.rows), "listed position")) · \(Fmt.plural(d.rows.count, "line")) in total")
         }
         HomeCollapsible(id: "investments", title: "Investments (\(ccy))", summary: HomeLogic.investmentsSummary(d, hide: hide),
-                        expanded: investmentsOpen, onToggle: { withAnimation(.snappy(duration: 0.28)) { investmentsOpen.toggle() } }) { investments(d) }
+                        expanded: investmentsOpen, onToggle: { withAnimation(RMotion.expand) { investmentsOpen.toggle() } }) { investments(d) }
         alerts(d)
         pies(d)
         if let sum = HoldingsHomeSummaries.positions(rows: d.rows) {

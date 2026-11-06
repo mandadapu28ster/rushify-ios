@@ -128,7 +128,7 @@ struct HomeCollapsible<Content: View>: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         SectionTitle(title)
-                        if !expanded { Muted(summary).accessibilityIdentifier("section_summary_\(id)").transition(.opacity) }
+                        if !expanded { Muted(summary).accessibilityIdentifier("section_summary_\(id)").transition(.opacity.animation(.easeOut(duration: 0.2).delay(0.15))) }
                     }
                     Spacer(minLength: 8)
                     Image(systemName: "chevron.down").font(.r(12, .semibold)).foregroundStyle(RColors.muted)
@@ -143,9 +143,9 @@ struct HomeCollapsible<Content: View>: View {
             if expanded {
                 VStack(alignment: .leading, spacing: 8) { content() }.padding(.top, 8)
                     .accessibilityElement(children: .contain).accessibilityIdentifier("section_body_\(id)")
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .transition(.asymmetric(insertion: .opacity.animation(.easeIn(duration: 0.3).delay(0.12)), removal: .opacity.animation(.easeOut(duration: 0.15))))
             }
         }
-        .animation(.snappy(duration: 0.28), value: expanded)
+        .animation(RMotion.expand, value: expanded)
     }
 }
