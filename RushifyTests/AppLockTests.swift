@@ -86,4 +86,15 @@ final class AppLockTests: XCTestCase {
     }
 
     func testDefaultTimeoutIsOneMinute() { XCTAssertEqual(make().timeout, .oneMinute) }
+
+    func testOverlappingUnlockCallsShareOnePrompt() async {
+        let auth = FakeAuthenticator()
+        let lock = AppLock(store: store, authenticator: auth)
+        _ = await lock.setEnabled(true)
+        lock.lockNow()
+        async let a = lock.unlock(); async let b = lock.unlock()
+        let results = await [a, b]
+        XCTAssertEqual(results, [true, true])
+        XCTAssertEqual(auth.prompts, 2, "one prompt to turn it on, one to unlock")
+    }
 }

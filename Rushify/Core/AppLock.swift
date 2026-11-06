@@ -71,7 +71,7 @@ final class AppLock: ObservableObject {
     var methodName: String? { authenticator.methodName }
 
     /// Turning the lock on first proves the owner can pass it, so nobody gets locked out. Returns whether the setting changed.
-    @discardableResult
+    @MainActor @discardableResult
     func setEnabled(_ on: Bool) async -> Bool {
         if on {
             guard authenticator.methodName != nil else { return false }
@@ -100,10 +100,19 @@ final class AppLock: ObservableObject {
 
     func lockNow() { if enabled { isLocked = true } }
 
-    @discardableResult
+    private var attempt: Task<Bool, Never>?
+
+    /// One prompt at a time: if the lock screen asks again while an attempt is already showing (the view can be rebuilt,
+    /// and the tap and the automatic attempt can overlap), the caller waits for that attempt instead of prompting twice.
+    @MainActor @discardableResult
     func unlock() async -> Bool {
         guard isLocked else { return true }
-        let ok = await authenticator.authenticate(reason: "Unlock Rushify")
+        if let attempt { return await attempt.value }
+        let authenticator = authenticator
+        let task = Task { await authenticator.authenticate(reason: "Unlock Rushify") }
+        attempt = task
+        let ok = await task.value
+        attempt = nil
         if ok { isLocked = false; lastAttemptFailed = false } else { lastAttemptFailed = true }
         return ok
     }

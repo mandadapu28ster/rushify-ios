@@ -28,13 +28,19 @@ xcodegen generate            # creates Rushify.xcodeproj from project.yml
 open Rushify.xcodeproj
 ```
 
-Unit tests (about 415, against a stubbed network) and end-to-end tests (44, the real app driven through every screen):
+Unit tests (about 440, against a stubbed network) and end-to-end tests (53, the real app driven through every screen):
 
 ```bash
 xcodebuild test -project Rushify.xcodeproj -scheme Rushify \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:RushifyTests -quiet
 xcodebuild test -project Rushify.xcodeproj -scheme Rushify \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:RushifyUITests -quiet
+```
+
+To run everything quicker (build once, unit tests, then the end-to-end tests on 4 cloned simulators; about 10 minutes instead of 15+):
+
+```bash
+scripts/test-all.sh            # uses the booted simulator; optional: scripts/test-all.sh <udid> <workers>
 ```
 
 The end-to-end tests run the app in UI-test mode (debug builds only): `RUSHIFY_UITEST=1` signs in against canned responses from
