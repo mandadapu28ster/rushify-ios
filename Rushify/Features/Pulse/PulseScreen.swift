@@ -424,6 +424,7 @@ private struct PulseWatchItemCard: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 6) {
+                        StockIcon(symbol: it.yahooSymbol, size: 24)
                         Num(it.yahooSymbol, size: 14, bold: true)
                         if F.isIndexLike(it.quoteType) { Text("INDEX / FUND").font(.r(9)).foregroundStyle(RColors.accent) }
                     }
