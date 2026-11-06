@@ -19,19 +19,19 @@ struct PulseScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
                 Muted("Market news, watchlists and radar.")
-                HStack(spacing: 8) {
-                    ForEach(Array(["Radar", "News", "Watchlists"].enumerated()), id: \.offset) { i, t in
-                        Chip(text: t, selected: tab == i) { tab = i }.accessibilityIdentifier("pulse_tab_\(t.lowercased())")
-                    }
-                }.padding(.top, 4)
+                RSegmented(titles: ["Radar", "News", "Watchlists"], selection: $tab, idPrefix: "pulse_tab").padding(.top, 4)
             }
             .padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 4)
-            switch tab {
-            case 0: PulseRadarTab(model: radar)
-            case 1: PulseNewsTab(model: news)
-            default: PulseWatchlistTab(model: watch)
+            Group {
+                switch tab {
+                case 0: PulseRadarTab(model: radar)
+                case 1: PulseNewsTab(model: news)
+                default: PulseWatchlistTab(model: watch)
+                }
             }
+            .transition(.opacity).id(tab)
         }
+        .animation(RMotion.fade, value: tab)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(RColors.bg)
     }

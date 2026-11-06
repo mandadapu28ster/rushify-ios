@@ -27,6 +27,18 @@ enum MoreDest: String, CaseIterable, Hashable {
         case .password: return "Change password"
         }
     }
+    var section: RSection {
+        switch self {
+        case .holdings: return .holdings
+        case .sync: return .sync
+        case .ai: return .ai
+        case .performance: return .performance
+        case .corporate: return .corporate
+        case .connections: return .connections
+        case .addHolding: return .addHolding
+        case .password: return .password
+        }
+    }
     var subtitle: String {
         switch self {
         case .holdings: return "Positions by account, lots, sectors"
@@ -46,6 +58,7 @@ struct MoreView: View {
     @ObservedObject var session: SessionManager
     @ObservedObject var lock: AppLock
     @Binding var hideBalances: Bool
+    @Binding var paletteCB: Bool
     var onSignOut: () -> Void
     @State private var lockMessage: String?
 
@@ -68,7 +81,11 @@ struct MoreView: View {
                     RCard {
                         ForEach(MoreDest.allCases, id: \.self) { d in
                             NavigationLink(value: d) {
-                                HStack {
+                                HStack(spacing: 12) {
+                                    Image(systemName: d.section.symbol).font(.r(15, .semibold)).foregroundStyle(d.section.tint)
+                                        .frame(width: 32, height: 32)
+                                        .background(d.section.tint.opacity(0.16), in: RoundedRectangle(cornerRadius: 9))
+                                        .accessibilityHidden(true)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(d.title).font(.r(16)).foregroundStyle(RColors.text)
                                         Muted(d.subtitle)
@@ -92,6 +109,10 @@ struct MoreView: View {
                         Toggle(isOn: $hideBalances) {
                             VStack(alignment: .leading, spacing: 2) { Text("Hide balances").foregroundStyle(RColors.text); Muted("Show •••• instead of amounts") }
                         }.tint(RColors.accent).accessibilityIdentifier("toggle_hide")
+                        Divider().overlay(Color.rHairline)
+                        Toggle(isOn: Binding(get: { paletteCB }, set: { paletteCB = $0; RPalette.set(colorBlindFriendly: $0) })) {
+                            VStack(alignment: .leading, spacing: 2) { Text("Colour-blind friendly").foregroundStyle(RColors.text); Muted("Blue and orange instead of green and red") }
+                        }.tint(RColors.accent).accessibilityIdentifier("toggle_palette")
                         Divider().overlay(Color.rHairline)
                         Toggle(isOn: lockBinding) {
                             VStack(alignment: .leading, spacing: 2) { Text("Require \(lock.methodName ?? "passcode")").foregroundStyle(RColors.text); Muted("Ask each time you open Rushify") }

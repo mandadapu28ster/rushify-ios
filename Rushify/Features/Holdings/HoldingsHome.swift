@@ -5,25 +5,23 @@ import SwiftUI
 // MARK: palette + small chart pieces
 
 enum HoldingsPalette {
-    static let sectorPie: [Color] = [0x0072B2, 0xE69F00, 0x009E73, 0xD55E00, 0xCC79A7, 0x785EF0, 0x56B4E9, 0x0E7490].map { Color(hex: $0) }
+    static var sectorPie: [Color] { RColors.categorical }
+    /// Listed holdings by tax wrapper. Cash in the same wrapper is the same hue, lightened, so a bar still shows which wrapper it belongs to.
     static let wrapper: [String: Color] = [
-        "Invest": Color(hex: 0x005A9C), "ISA": Color(hex: 0x007A53), "SIPP": Color(hex: 0x5E3F99), "LISA": Color(hex: 0xC2410C),
-        "JISA": Color(hex: 0xBE185D), "JSIPP": Color(hex: 0x0C6E87), "Other": Color(hex: 0x475569),
+        "Invest": Color(hex: 0x5AA9FF), "ISA": Color(hex: 0xA78BFA), "SIPP": Color(hex: 0xF5B84B), "LISA": Color(hex: 0xF472B6),
+        "JISA": Color(hex: 0x7DD3FC), "JSIPP": Color(hex: 0x818CF8), "Other": Color(hex: 0x94A3B8),
     ]
-    static let property = Color(hex: 0x785EF0)
-    static let otherAssets = Color(hex: 0x64748B)
-    private static let cash: [String: Color] = [
-        "Invest": Color(hex: 0xD97706), "ISA": Color(hex: 0x2563EB), "Cash ISA": Color(hex: 0x7C3AED), "SIPP": Color(hex: 0x0D9488),
-        "LISA": Color(hex: 0x0284C7), "JISA": Color(hex: 0x059669), "JSIPP": Color(hex: 0xEA580C), "Other": Color(hex: 0x64748B),
-    ]
-    private static let cashFallback: [Color] = [0xDB2777, 0x65A30D, 0x0891B2, 0x9333EA, 0xCA8A04, 0x4F46E5].map { Color(hex: $0) }
+    static let property = Color(hex: 0xC4B5FD)
+    static let otherAssets = Color(hex: 0x94A3B8)
+    private static let cashFallback: [Color] = [0xFB923C, 0xFDE68A, 0x7DD3FC, 0xF9A8D4, 0xA5B4FC, 0xFCD34D].map { Color(hex: $0) }
     static func cashColor(_ label: String) -> Color {
-        if let c = cash[label] { return c }
+        let key = label.replacingOccurrences(of: "Cash ", with: "")
+        if let w = wrapper[key] ?? wrapper[label] { return w.lightened(0.38) }
         // Stable across launches (String.hashValue is randomised): sum of UTF-16 units.
         let h = label.lowercased().utf16.reduce(0) { ($0 &* 31 &+ Int($1)) & 0x7fffffff }
         return cashFallback[h % cashFallback.count]
     }
-    static let wealthLines: [Color] = [0x34D399, 0x60A5FA, 0xF472B6, 0xFBBF24, 0xA78BFA, 0xFB7185, 0x2DD4BF, 0x818CF8].map { Color(hex: $0) }
+    static var wealthLines: [Color] { RColors.categorical }
 }
 
 private func holdingsDouble(_ d: Decimal) -> Double { (d as NSDecimalNumber).doubleValue }

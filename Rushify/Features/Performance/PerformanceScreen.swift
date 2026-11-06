@@ -1,7 +1,7 @@
 import SwiftUI
 
-private let performanceGrowthColors: [Color] = [0x3B82F6, 0xF59E0B, 0x34D399, 0xA855F7].map { Color(hex: $0) }   // price, interaction, income, currency
-private let performanceTickerColors: [Color] = [0x0072B2, 0xE69F00, 0x009E73, 0xD55E00, 0xCC79A7, 0x785EF0, 0x56B4E9, 0x0E7490].map { Color(hex: $0) }
+private let performanceGrowthColors: [Color] = [0x5AA9FF, 0xF5B84B, 0x7DD3FC, 0xA78BFA].map { Color(hex: $0) }   // price, interaction, income, currency
+private var performanceTickerColors: [Color] { RColors.categorical }
 
 private func performanceDouble(_ d: Decimal?) -> Double { d.map { NSDecimalNumber(decimal: $0).doubleValue } ?? 0 }
 
@@ -29,18 +29,18 @@ struct PerformanceScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                ForEach(Array(["Growth", "Benchmarks", "Dividends"].enumerated()), id: \.offset) { i, t in
-                    Chip(text: t, selected: tab == i) { tab = i }.accessibilityIdentifier("performance_tab_\(t.lowercased())")
+            RSegmented(titles: ["Growth", "Benchmarks", "Dividends"], selection: $tab, idPrefix: "performance_tab")
+                .padding(.horizontal, 16).padding(.vertical, 8)
+            Group {
+                switch tab {
+                case 0: PerformanceGrowthTab(vm: growth, dashboard: dashboard, equity: equity)
+                case 1: PerformanceBenchmarksTab(vm: bench)
+                default: PerformanceDividendsTab(vm: dividends)
                 }
-                Spacer()
-            }.padding(.horizontal, 16).padding(.vertical, 8)
-            switch tab {
-            case 0: PerformanceGrowthTab(vm: growth, dashboard: dashboard, equity: equity)
-            case 1: PerformanceBenchmarksTab(vm: bench)
-            default: PerformanceDividendsTab(vm: dividends)
             }
+            .transition(.opacity).id(tab)
         }
+        .animation(RMotion.fade, value: tab)
         .background(RColors.bg)
         .navigationTitle("Performance & income").navigationBarTitleDisplayMode(.inline)
         .onChange(of: events.version) { _ in

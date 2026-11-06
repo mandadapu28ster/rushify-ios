@@ -27,6 +27,7 @@ struct AppRoot: View {
     @ObservedObject var session: SessionManager
     @ObservedObject var lock: AppLock
     @State private var hide: Bool
+    @State private var paletteCB = RPalette.colorBlindFriendly
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -44,7 +45,7 @@ struct AppRoot: View {
             Group {
                 if session.state.serverUrl == nil { ConnectView(repo: container.repo) }
                 else if !session.state.loggedIn { LoginView(repo: container.repo, session: session) }
-                else if !covered { MainTabs(container: container, session: session, lock: lock, hide: $hide) }   // not even built while locked
+                else if !covered { MainTabs(container: container, session: session, lock: lock, hide: $hide, paletteCB: $paletteCB) }   // not even built while locked
             }
             if covered { LockScreen(lock: lock).transition(.opacity) }
             if lock.shieldVisible { ShieldCover().transition(.opacity) }
@@ -54,7 +55,7 @@ struct AppRoot: View {
         .environment(\.hideBalances, hide)
         .scrollDismissesKeyboard(.interactively)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
-        .id(typeSize)       // rebuild once when the user changes the text size, so scaled fonts update
+        .id("\(typeSize)-\(paletteCB)")       // also rebuilds when the colour scheme changes; rebuild once when the user changes the text size, so scaled fonts update
         .onChange(of: hide) { _, v in session.hideBalances = v }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
@@ -101,6 +102,7 @@ struct MainTabs: View {
     @ObservedObject var session: SessionManager
     @ObservedObject var lock: AppLock
     @Binding var hide: Bool
+    @Binding var paletteCB: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -113,7 +115,7 @@ struct MainTabs: View {
                         .toolbar { ToolbarItem(placement: .topBarLeading) { if session.state.cleartext { HTTPPill().accessibilityIdentifier("http_chip") } } }
                 }
                 .tabItem { Label("Pulse", systemImage: "star.fill") }
-                MoreView(repo: container.repo, session: session, lock: lock, hideBalances: $hide) {
+                MoreView(repo: container.repo, session: session, lock: lock, hideBalances: $hide, paletteCB: $paletteCB) {
                     container.session.logout()
                     Task { await container.repo.wipeCache() }
                 }

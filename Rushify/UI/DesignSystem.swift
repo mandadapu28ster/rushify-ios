@@ -161,3 +161,63 @@ struct RAuthBackground: View {
         }.ignoresSafeArea()
     }
 }
+
+// MARK: - Motion
+
+/// One set of animation curves for the whole app. Motion is brief and purposeful; with Reduce Motion on, movement becomes a quick fade.
+enum RMotion {
+    static let snappy = Animation.snappy(duration: 0.28)
+    static let smooth = Animation.smooth(duration: 0.35)
+    static let quick = Animation.easeOut(duration: 0.15)
+    static let fade = Animation.easeInOut(duration: 0.18)
+    static func standard(reduce: Bool) -> Animation { reduce ? fade : snappy }
+    /// Delay for the nth item of a staggered entrance; none with Reduce Motion, and capped so long lists don't wait.
+    static func stagger(_ index: Int, reduce: Bool) -> Double { reduce ? 0 : min(Double(index), 6) * 0.045 }
+}
+
+/// Fades and lifts a view in once, with an optional delay (staggered entrances). Plain fade with Reduce Motion.
+struct RAppear: ViewModifier {
+    var delay: Double = 0
+    @Environment(\.accessibilityReduceMotion) private var reduce
+    @State private var shown = false
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown || reduce ? 0 : 10)
+            .onAppear { withAnimation(reduce ? RMotion.fade : RMotion.smooth.delay(delay)) { shown = true } }
+    }
+}
+extension View {
+    func rAppear(_ index: Int = 0) -> some View { modifier(RAppear(delay: RMotion.stagger(index, reduce: false))) }
+}
+
+/// Sliding selector for a small set of views (Pulse, Performance). The highlight glides between choices; each choice keeps its own identifier.
+struct RSegmented: View {
+    let titles: [String]
+    @Binding var selection: Int
+    var idPrefix: String
+    @Namespace private var ns
+    @Environment(\.accessibilityReduceMotion) private var reduce
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(Array(titles.enumerated()), id: \.offset) { i, t in
+                Button { withAnimation(RMotion.standard(reduce: reduce)) { selection = i } } label: {
+                    Text(t).font(.r(13, .semibold)).foregroundStyle(selection == i ? RColors.text : RColors.muted)
+                        .frame(maxWidth: .infinity, minHeight: 34)
+                        .background {
+                            if selection == i {
+                                Capsule().fill(RColors.elevated).matchedGeometryEffect(id: "seg", in: ns)
+                                    .overlay(Capsule().strokeBorder(Color.rHairline))
+                            }
+                        }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("\(idPrefix)_\(t.lowercased())")
+                .accessibilityAddTraits(selection == i ? .isSelected : [])
+            }
+        }
+        .padding(3).background(RColors.variant, in: Capsule())
+        .sensoryFeedback(.selection, trigger: selection)
+    }
+}
