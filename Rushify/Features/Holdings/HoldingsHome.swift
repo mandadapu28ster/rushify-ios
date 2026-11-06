@@ -130,6 +130,7 @@ struct HoldingsHomeSectorsContent: View {
         ForEach(Array(cur.holdings.enumerated()), id: \.offset) { i, h in
             HStack(alignment: .center, spacing: 8) {
                 HoldingsDot(color: HoldingsPalette.sectorPie[i % HoldingsPalette.sectorPie.count])
+                StockIcon(symbol: h.ticker, size: 28)
                 VStack(alignment: .leading, spacing: 1) {
                     Num(h.ticker, size: 13, bold: true)
                     if let n = h.name { Muted(n) }
@@ -168,7 +169,7 @@ struct HoldingsHomePositionSizeContent: View {
                         return [(value, RColors.chart[0]), (max(cost - value, 0), RColors.loss)]
                     }()
                     VStack(alignment: .leading, spacing: 3) {
-                        HStack { Num(b.ticker, size: 12, bold: true); Spacer(); Num(Fmt.money(b.value, ccy, hide: hide), size: 12) }
+                        HStack(spacing: 6) { StockIcon(symbol: b.ticker, size: 20); Num(b.ticker, size: 12, bold: true); Spacer(); Num(Fmt.money(b.value, ccy, hide: hide), size: 12) }
                         HoldingsHBar(segments: segs, scale: scale)
                         HStack { Muted("Cost \(Fmt.money(b.cost, ccy, hide: hide, scale: 0))"); Spacer(); Num(Fmt.signedMoney(b.pnl, ccy, hide: hide), color: RColors.pnl(b.pnl), size: 11) }
                     }.padding(.vertical, 4)
