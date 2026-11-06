@@ -75,7 +75,7 @@ struct ChangePasswordScreen: View {
                 if let e = vm.ui.error { Banner(text: e, color: RColors.loss).accessibilityIdentifier("pw_error") }
                 if vm.ui.done { Banner(text: "Password updated. Please sign in with your new password.", color: RColors.gain).accessibilityIdentifier("pw_done") }
                 Button { Task { await vm.submit(current: cur, new: new, confirm: conf) } } label: {
-                    Text(vm.ui.busy ? "Saving…" : "Save new password").font(.system(size: 15, weight: .semibold)).frame(maxWidth: .infinity).padding(.vertical, 6)
+                    Text(vm.ui.busy ? "Saving…" : "Save new password").font(.r(15, .semibold)).frame(maxWidth: .infinity).padding(.vertical, 6)
                 }
                 .buttonStyle(.borderedProminent).tint(RColors.accent).disabled(!canSubmit)
                 .accessibilityIdentifier("pw_submit").padding(.top, 4)

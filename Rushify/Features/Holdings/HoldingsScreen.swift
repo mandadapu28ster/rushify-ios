@@ -84,7 +84,7 @@ struct HoldingsScreen: View {
     }
 
     @ViewBuilder private func header(_ d: Dashboard?, _ soldCount: Int) -> some View {
-        if showTitle { Text("Holdings").font(.system(size: 24, weight: .regular)).foregroundStyle(RColors.text).accessibilityIdentifier("holdings_title") }
+        if showTitle { Text("Holdings").font(.r(24, .regular)).foregroundStyle(RColors.text).accessibilityIdentifier("holdings_title") }
         AsOfBar(asOf: dash.state.data?.fetchedAt, error: dash.state.error, hasData: d != nil, loading: dash.state.loading,
                 label: d.map { "Data as of \(Fmt.stamp(iso: $0.asOf))" })
         if rollupsVm.state.loading && d != nil && rollupsVm.state.data == nil { Muted("Updating broker rollups and account totals…") }
@@ -94,7 +94,7 @@ struct HoldingsScreen: View {
                 .accessibilityIdentifier("incomplete_lots")
         }
         TextField("Search ticker, name or sector", text: $query)
-            .textFieldStyle(.plain).font(.system(size: 15)).foregroundStyle(RColors.text)
+            .textFieldStyle(.plain).font(.r(15)).foregroundStyle(RColors.text)
             .padding(10).background(RColors.variant, in: RoundedRectangle(cornerRadius: 10))
             .textInputAutocapitalization(.never).autocorrectionDisabled()
             .accessibilityIdentifier("holdings_search")
@@ -133,7 +133,7 @@ private struct HoldingsAccountsSummaryCard: View {
         let totals = HoldingsAccountSummaries.totals(summaries)
         RCard {
             HStack(alignment: .top) {
-                Text("Broker accounts (local history)").font(.system(size: 16, weight: .semibold)).foregroundStyle(RColors.text)
+                Text("Broker accounts (local history)").font(.r(16, .semibold)).foregroundStyle(RColors.text)
                 Spacer(minLength: 8)
                 Muted(open ? "▲" : "▼")
             }
@@ -146,7 +146,7 @@ private struct HoldingsAccountsSummaryCard: View {
                 Muted("Realised, unrealised, tax / FX / broker fees come from stored order fills. Dividend payouts are equity dividends only; interest on cash is reported separately; Payout is dividends plus interest.").padding(.top, 6)
                 ForEach(Array(summaries.enumerated()), id: \.offset) { _, a in block(a).padding(.top, 10) }
                 if let t = totals {
-                    Text("Total (all accounts)").font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.accent).padding(.top, 12).accessibilityIdentifier("accounts_total")
+                    Text("Total (all accounts)").font(.r(15, .semibold)).foregroundStyle(RColors.accent).padding(.top, 12).accessibilityIdentifier("accounts_total")
                     HoldingsKV(label: "Investments", value: Fmt.money(t.investments, ccy, hide: hide))
                     HoldingsKV(label: "Realised", value: Fmt.signedMoney(t.realised, ccy, hide: hide), color: RColors.pnl(t.realised))
                     HoldingsKV(label: "Unrealised", value: Fmt.signedMoney(t.unrealised, ccy, hide: hide), color: RColors.pnl(t.unrealised))
@@ -162,7 +162,7 @@ private struct HoldingsAccountsSummaryCard: View {
     }
 
     @ViewBuilder private func block(_ a: HoldingsAccountSummary) -> some View {
-        Text(a.label).font(.system(size: 14, weight: .medium)).foregroundStyle(RColors.text)
+        Text(a.label).font(.r(14, .medium)).foregroundStyle(RColors.text)
         Muted(a.source)
         if a.source == "monzo" {
             HoldingsKV(label: "Balance", value: Fmt.money(a.monzoTotal, ccy, hide: hide)); Muted("Bank balance: no trades or payouts")
@@ -219,7 +219,7 @@ private struct HoldingsGroupHeader: View {
     var body: some View {
         let g = group
         HStack {
-            Text(g.name).font(.system(size: 16, weight: .semibold)).foregroundStyle(RColors.text)
+            Text(g.name).font(.r(16, .semibold)).foregroundStyle(RColors.text)
             Spacer(minLength: 8)
             if let b = g.badge { Muted(b.uppercased()) }
         }
@@ -265,7 +265,7 @@ private struct HoldingsGroupBody: View {
     @ViewBuilder private var monzo: some View {
         ForEach(HoldingsLogic.monzoSections(group.rows), id: \.title) { section in
             HStack {
-                Text(section.title).font(.system(size: 13, weight: .semibold)).foregroundStyle(RColors.accent)
+                Text(section.title).font(.r(13, .semibold)).foregroundStyle(RColors.accent)
                 Spacer()
                 Num(Fmt.money(section.rows.reduce(Decimal(0)) { $0 + ($1.marketValueBase ?? 0) }, ccy, hide: hide), size: 12)
             }.padding(.top, 8)
@@ -294,7 +294,7 @@ private struct HoldingsGroupBody: View {
         }
         if group.brokerLike {
             if !group.closed.isEmpty {
-                Text("Closed (order history, no open quantity)").font(.system(size: 12)).foregroundStyle(RColors.muted).padding(.top, 10)
+                Text("Closed (order history, no open quantity)").font(.r(12)).foregroundStyle(RColors.muted).padding(.top, 10)
                 ForEach(Array(group.closed.enumerated()), id: \.offset) { _, l in HoldingsClosedCard(line: l, ccy: ccy) }
             } else if exposure == .closed {
                 Muted("No closed instruments in order history for this account.").padding(.top, 8)
@@ -354,7 +354,7 @@ private struct HoldingsRowLine: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Num(ticker, bold: true)
                     Muted(lotLabel ?? row.instrumentName ?? row.sector ?? "")
-                    if !tags.isEmpty { Text(tags.joined(separator: " · ")).font(.system(size: 10)).foregroundStyle(sold ? RColors.warn : RColors.muted) }
+                    if !tags.isEmpty { Text(tags.joined(separator: " · ")).font(.r(10)).foregroundStyle(sold ? RColors.warn : RColors.muted) }
                 }
                 Spacer(minLength: 8)
                 VStack(alignment: .trailing, spacing: 1) {
@@ -378,7 +378,7 @@ private struct HoldingsMonzoRow: View {
         Button(action: onTap) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(HoldingsLogic.monzoRowName(row)).font(.system(size: 14)).foregroundStyle(RColors.text)
+                    Text(HoldingsLogic.monzoRowName(row)).font(.r(14)).foregroundStyle(RColors.text)
                     if let badge { Muted(badge) }
                 }
                 Spacer(minLength: 8)
@@ -472,60 +472,96 @@ struct HoldingsDetailView<Actions: View>: View {
     @Environment(\.hideBalances) private var hide
 
     private func detail(_ label: String, _ value: String, _ color: Color = RColors.text) -> some View {
-        HStack(alignment: .top) { Muted(label); Spacer(minLength: 8); Num(value, color: color, size: 13) }
+        HStack(alignment: .firstTextBaseline) { Muted(label); Spacer(minLength: 12); Num(value, color: color, size: 14).multilineTextAlignment(.trailing) }
+    }
+
+    /// A titled group of rows on its own raised surface.
+    private func group<C: View>(_ title: String, @ViewBuilder _ content: () -> C) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased()).font(.r(11, .semibold)).tracking(0.8).foregroundStyle(RColors.muted).padding(.leading, 4)
+            VStack(alignment: .leading, spacing: 10) { content() }
+                .frame(maxWidth: .infinity, alignment: .leading).padding(14)
+                .background(RColors.variant.opacity(0.55), in: RoundedRectangle(cornerRadius: RRadius.card))
+        }
     }
 
     var body: some View {
         let r = row
         let sold = HoldingsLogic.isManualListedSold(r)
         let tags = [sold ? "Sold" : nil, rollup.map { HoldingsLogic.rollupExposureLabel($0.exposure) }].compactMap { $0 }
+        let hasFundamentals = [r.dividendYield, r.roe, r.debtToEquity, r.profitMargin, r.revenue].contains { $0 != nil }
+        let hasValuation = [r.peRatio, r.pbRatio, r.pegRatio, r.priceToSales].contains { $0 != nil }
         ScrollView {
-            VStack(alignment: .leading, spacing: 6) {
-                Num(HoldingsLogic.displayTicker(r, rollup), size: 20, bold: true)
-                Muted([r.instrumentName, r.brokerLabel].compactMap { $0 }.joined(separator: " · "))
-                if !tags.isEmpty { Text(tags.joined(separator: " · ")).font(.system(size: 12)).foregroundStyle(sold ? RColors.warn : RColors.accent) }
+            VStack(alignment: .leading, spacing: 16) {
+                // Hero: what it is, what it is worth, and how it is doing
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(HoldingsLogic.displayTicker(r, rollup)).font(.r(26, .bold)).foregroundStyle(RColors.text)
+                    Muted([r.instrumentName, r.brokerLabel].compactMap { $0 }.joined(separator: " · "))
+                    if !tags.isEmpty { Text(tags.joined(separator: " · ")).font(.r(12, .medium)).foregroundStyle(sold ? RColors.warn : RColors.accent) }
+                    HStack(alignment: .firstTextBaseline) {
+                        Num(Fmt.money(r.marketValueBase, ccy, hide: hide), size: 30, bold: true)
+                        Spacer(minLength: 8)
+                        if r.pnlStockBase != nil {
+                            Text(Fmt.signedMoney(r.pnlStockBase, ccy, hide: hide)).font(.r(14, .semibold)).monospacedDigit()
+                                .foregroundStyle(RColors.pnl(r.pnlStockBase))
+                                .padding(.horizontal, 10).padding(.vertical, 4)
+                                .background(RColors.pnl(r.pnlStockBase).opacity(0.14), in: Capsule())
+                        }
+                    }.padding(.top, 4)
+                }
                 if sold { Banner(text: "Fully exited\(r.soldOutAt.map { " on \($0)" } ?? ""). Kept for your records.") }
-                Color.clear.frame(height: 4)
-                detail("Sector", r.sector ?? Fmt.dash)
-                detail("Quantity", Fmt.quantity(r.quantity))
-                detail("Currency", r.currency ?? Fmt.dash)
-                detail("Average price", Fmt.money(r.avgPrice, r.currency, hide: hide))
-                detail("Current price", Fmt.money(r.currentPrice, r.currency, hide: hide))
-                detail("Market value", Fmt.money(r.marketValueBase, ccy, hide: hide))
-                detail("Cost", Fmt.money(r.costBase, ccy, hide: hide))
-                detail("P/L (price)", Fmt.signedMoney(r.pnlStockBase, ccy, hide: hide), RColors.pnl(r.pnlStockBase))
-                if let p = r.purchaseDate { detail("Purchase date", p) }
-                if r.source == "manual" && HoldingsLogic.isListedAssetKind(r.assetKind) {
-                    let isSet = r.purchaseDate != nil && r.costBaseGbp != nil
-                    if isSet { detail("Purchase & cost (GBP)", "\(r.purchaseDate!) · \(Fmt.money(r.costBaseGbp, "GBP", hide: hide))") }
-                    else { Text("Purchase & cost (GBP): not set. Use Edit lot below.").font(.system(size: 12)).foregroundStyle(RColors.warn).accessibilityIdentifier("basis_not_set") }
-                    if isSet { detail("FX effect (approx.)", r.pnlCurrencyEffect != nil ? Fmt.signedMoney(r.pnlCurrencyEffect, ccy, hide: hide) : Fmt.dash, RColors.pnl(r.pnlCurrencyEffect)) }
+
+                group("Position") {
+                    detail("Sector", r.sector ?? Fmt.dash)
+                    detail("Quantity", Fmt.quantity(r.quantity))
+                    detail("Currency", r.currency ?? Fmt.dash)
+                    detail("Average price", Fmt.money(r.avgPrice, r.currency, hide: hide))
+                    detail("Current price", Fmt.money(r.currentPrice, r.currency, hide: hide))
+                    detail("Market value", Fmt.money(r.marketValueBase, ccy, hide: hide))
+                    detail("Cost", Fmt.money(r.costBase, ccy, hide: hide))
+                    detail("P/L (price)", Fmt.signedMoney(r.pnlStockBase, ccy, hide: hide), RColors.pnl(r.pnlStockBase))
+                    if let p = r.purchaseDate { detail("Purchase date", p) }
+                    if r.source == "manual" && HoldingsLogic.isListedAssetKind(r.assetKind) {
+                        let isSet = r.purchaseDate != nil && r.costBaseGbp != nil
+                        if isSet { detail("Purchase & cost (GBP)", "\(r.purchaseDate!) · \(Fmt.money(r.costBaseGbp, "GBP", hide: hide))") }
+                        else { Text("Purchase & cost (GBP): not set. Use Edit lot below.").font(.r(12)).foregroundStyle(RColors.warn).accessibilityIdentifier("basis_not_set") }
+                        if isSet { detail("FX effect (approx.)", r.pnlCurrencyEffect != nil ? Fmt.signedMoney(r.pnlCurrencyEffect, ccy, hide: hide) : Fmt.dash, RColors.pnl(r.pnlCurrencyEffect)) }
+                    }
                 }
+
                 if let ru = rollup {
-                    Color.clear.frame(height: 4)
-                    if primary {
-                        detail("Tax", Fmt.money(ru.fillTaxBaseSum ?? 0, ccy, hide: hide))
-                        detail("FX fees", Fmt.money(ru.fillFxFeesBaseSum ?? 0, ccy, hide: hide))
-                        detail("Broker fees", Fmt.money(ru.fillBrokerFeesBaseSum ?? 0, ccy, hide: hide))
-                        HoldingsDividendsBlock(line: ru, base: ccy)
-                    } else { Muted("Fees and dividends for this symbol are shown on its first line.") }
+                    group("Fees & dividends") {
+                        if primary {
+                            detail("Tax", Fmt.money(ru.fillTaxBaseSum ?? 0, ccy, hide: hide))
+                            detail("FX fees", Fmt.money(ru.fillFxFeesBaseSum ?? 0, ccy, hide: hide))
+                            detail("Broker fees", Fmt.money(ru.fillBrokerFeesBaseSum ?? 0, ccy, hide: hide))
+                            HoldingsDividendsBlock(line: ru, base: ccy)
+                        } else { Muted("Fees and dividends for this symbol are shown on its first line.") }
+                    }
                 }
-                Color.clear.frame(height: 4)
-                detail("P/E", Fmt.number(r.peRatio))
-                detail("P/B", Fmt.number(r.pbRatio))
-                detail("PEG", Fmt.number(r.pegRatio))
-                detail("P/S", Fmt.number(r.priceToSales))
-                detail("Dividend yield", Fmt.percentFromFraction(r.dividendYield))
-                detail("ROE", Fmt.percentFromFraction(r.roe))
-                detail("Debt / equity", Fmt.number(r.debtToEquity))
-                detail("Profit margin", Fmt.percent(r.profitMargin))
-                detail("Revenue", Fmt.abbreviate(r.revenue))
+
+                if hasValuation {
+                    group("Valuation") {
+                        detail("P/E", Fmt.number(r.peRatio)); detail("P/B", Fmt.number(r.pbRatio))
+                        detail("PEG", Fmt.number(r.pegRatio)); detail("P/S", Fmt.number(r.priceToSales))
+                    }
+                }
+                if hasFundamentals {
+                    group("Quality & income") {
+                        detail("Dividend yield", Fmt.percentFromFraction(r.dividendYield)); detail("ROE", Fmt.percentFromFraction(r.roe))
+                        detail("Debt / equity", Fmt.number(r.debtToEquity)); detail("Profit margin", Fmt.percent(r.profitMargin))
+                        detail("Revenue", Fmt.abbreviate(r.revenue))
+                    }
+                } else if !hasValuation {
+                    Muted("No fundamentals data for this holding.")
+                }
                 Muted("Prices are end-of-day / cached, not live.")
                 actions()
             }
             .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 28)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollIndicators(.hidden)
         .accessibilityIdentifier("holding_detail")
     }
 }

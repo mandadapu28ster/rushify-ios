@@ -5,30 +5,35 @@ struct RCard<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) { content() }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(RColors.surface, in: RoundedRectangle(cornerRadius: 14))
+            .padding(RSpace.l)
+            .background(RColors.surface, in: RoundedRectangle(cornerRadius: RRadius.card))
+            .overlay(RoundedRectangle(cornerRadius: RRadius.card).strokeBorder(Color.rHairline))
     }
 }
 
 struct SectionTitle: View {
     let text: String
     init(_ text: String) { self.text = text }
-    var body: some View { Text(text).font(.system(size: 17, weight: .semibold)).foregroundStyle(RColors.text) }
+    var body: some View { Text(text).font(.r(17, .semibold)).foregroundStyle(RColors.text).accessibilityAddTraits(.isHeader) }
 }
 
 struct Muted: View {
     let text: String
     init(_ text: String) { self.text = text }
-    var body: some View { Text(text).font(.system(size: 13)).foregroundStyle(RColors.muted).fixedSize(horizontal: false, vertical: true) }
+    var body: some View { Text(text).font(.r(13)).foregroundStyle(RColors.muted).fixedSize(horizontal: false, vertical: true) }
 }
 
+/// A number: tabular figures so columns of amounts line up, without the code-like look of a monospaced face.
 struct Num: View {
     let text: String
     var color: Color = RColors.text
     var size: CGFloat = 14
     var bold = false
     init(_ text: String, color: Color = RColors.text, size: CGFloat = 14, bold: Bool = false) { self.text = text; self.color = color; self.size = size; self.bold = bold }
-    var body: some View { Text(text).font(.system(size: size, weight: bold ? .semibold : .regular, design: .monospaced)).foregroundStyle(color) }
+    var body: some View {
+        Text(text).font(.r(size, bold ? .semibold : .regular)).monospacedDigit().foregroundStyle(color)
+            .contentTransition(.numericText()).animation(.snappy(duration: 0.3), value: text)
+    }
 }
 
 struct Stat: View {
@@ -36,7 +41,7 @@ struct Stat: View {
     var color: Color = RColors.text
     var body: some View {
         VStack(alignment: .leading, spacing: 2) { Muted(label); Num(value, color: color, size: 16, bold: true) }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 }
 
@@ -44,9 +49,21 @@ struct Banner: View {
     let text: String
     var color: Color = RColors.warn
     var body: some View {
-        Text(text).font(.system(size: 12)).foregroundStyle(color)
+        Text(text).font(.r(12)).foregroundStyle(color)
             .frame(maxWidth: .infinity, alignment: .leading).padding(10)
             .background(color.opacity(0.14), in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(color.opacity(0.18)))
+    }
+}
+
+/// Slim "not encrypted" marker shown while connected over plain http (replaces a full-width banner on every screen).
+struct HTTPPill: View {
+    var body: some View {
+        Label("Not encrypted (http)", systemImage: "lock.open.fill")
+            .font(.r(11, .semibold)).foregroundStyle(RColors.warn)
+            .padding(.horizontal, 10).padding(.vertical, 4)
+            .background(RColors.warn.opacity(0.14), in: Capsule())
+            .accessibilityLabel("Not encrypted. Avoid public Wi-Fi.")
     }
 }
 
@@ -56,10 +73,14 @@ struct Chip: View {
     var action: () -> Void
     var body: some View {
         Button(action: action) {
-            Text(text).font(.system(size: 12, weight: .medium)).foregroundStyle(selected ? RColors.accent : RColors.muted)
-                .padding(.horizontal, 12).padding(.vertical, 7)
+            Text(text).font(.r(13, .medium)).foregroundStyle(selected ? RColors.accent : RColors.muted)
+                .padding(.horizontal, 14).frame(minHeight: 34)
                 .background(selected ? RColors.accent.opacity(0.22) : RColors.variant, in: Capsule())
-        }.buttonStyle(.plain)
+                .overlay(Capsule().strokeBorder(selected ? RColors.accent.opacity(0.35) : Color.clear))
+        }
+        .buttonStyle(RPressStyle())
+        .sensoryFeedback(.selection, trigger: selected)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
@@ -67,10 +88,11 @@ struct ErrorState: View {
     let message: String
     var retry: () -> Void
     var body: some View {
-        VStack(spacing: 8) {
-            Text("Couldn't load this").font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.text)
+        VStack(spacing: 10) {
+            Image(systemName: "wifi.exclamationmark").font(.r(26)).foregroundStyle(RColors.warn)
+            Text("Couldn't load this").font(.r(16, .semibold)).foregroundStyle(RColors.text)
             Muted(message).multilineTextAlignment(.center)
-            Chip(text: "Retry", action: retry)
+            Button("Try again", action: retry).buttonStyle(RSecondaryButtonStyle())
         }.frame(maxWidth: .infinity).padding(24)
     }
 }
@@ -88,7 +110,7 @@ struct AsOfBar: View {
             HStack(spacing: 8) {
                 let text = label ?? asOf.map { "Updated \(Fmt.stamp($0))" } ?? ""
                 if !text.isEmpty { Muted(text) }
-                if loading { Muted("refreshing…") }
+                if loading { ProgressView().controlSize(.mini).tint(RColors.muted); Text("refreshing").font(.r(12)).foregroundStyle(RColors.muted) }
             }
         }
     }
@@ -106,19 +128,24 @@ struct HomeCollapsible<Content: View>: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         SectionTitle(title)
-                        if !expanded { Muted(summary).accessibilityIdentifier("section_summary_\(id)") }
+                        if !expanded { Muted(summary).accessibilityIdentifier("section_summary_\(id)").transition(.opacity) }
                     }
                     Spacer(minLength: 8)
-                    Image(systemName: expanded ? "chevron.up" : "chevron.down").font(.system(size: 12)).foregroundStyle(RColors.muted).padding(.top, 4)
+                    Image(systemName: "chevron.down").font(.r(12, .semibold)).foregroundStyle(RColors.muted)
+                        .rotationEffect(.degrees(expanded ? 180 : 0)).padding(.top, 5)
                 }
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RPressStyle())
+            .sensoryFeedback(.selection, trigger: expanded)
             .accessibilityIdentifier("section_toggle_\(id)")
+            .accessibilityValue(expanded ? "expanded" : "collapsed")
             if expanded {
                 VStack(alignment: .leading, spacing: 8) { content() }.padding(.top, 8)
                     .accessibilityElement(children: .contain).accessibilityIdentifier("section_body_\(id)")
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .animation(.snappy(duration: 0.28), value: expanded)
     }
 }

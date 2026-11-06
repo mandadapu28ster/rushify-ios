@@ -29,6 +29,7 @@ targets:
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIUserInterfaceStyle: Dark
         ITSAppUsesNonExemptEncryption: false
+        NSFaceIDUsageDescription: "Rushify uses Face ID to keep your portfolio private when the app lock is on."
         # The server is typically a plain http://host:port address that the user types in, so ATS must allow it.
         NSAppTransportSecurity:
           NSAllowsArbitraryLoads: true

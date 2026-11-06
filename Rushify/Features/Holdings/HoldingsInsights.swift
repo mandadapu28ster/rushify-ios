@@ -341,7 +341,7 @@ enum HoldingsHomeSummaries {
         let s = HoldingsSectors.build(rows)
         if s.isEmpty { return nil }
         let total = s.reduce(Decimal(0)) { $0 + $1.value }
-        return "\(s.count) sectors · listed total \(Fmt.money(total, ccy, hide: hide, scale: 0))."
+        return "\(Fmt.plural(s.count, "sector")) · listed total \(Fmt.money(total, ccy, hide: hide, scale: 0))."
     }
 
     static func positions(rows: [HoldingRow]) -> String? {

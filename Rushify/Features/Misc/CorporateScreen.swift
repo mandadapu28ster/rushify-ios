@@ -106,12 +106,11 @@ struct CorporateScreen: View {
     }
 
     private func actionButton(_ title: String, prominent: Bool, id: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title).font(.system(size: 14, weight: .semibold)).foregroundStyle(prominent ? RColors.bg : RColors.text)
-                .padding(.horizontal, 18).padding(.vertical, 9)
-                .background(prominent ? RColors.accent : RColors.variant, in: Capsule())
+        Group {
+            if prominent { Button(action: action) { Text(title) }.buttonStyle(RPrimaryButtonStyle()) }
+            else { Button(action: action) { Text(title) }.buttonStyle(RSecondaryButtonStyle()) }
         }
-        .buttonStyle(.plain).disabled(vm.resolveUi.busyId != nil).opacity(vm.resolveUi.busyId != nil ? 0.5 : 1)
+        .disabled(vm.resolveUi.busyId != nil).opacity(vm.resolveUi.busyId != nil ? 0.5 : 1)
         .accessibilityIdentifier(id)
     }
 
@@ -141,15 +140,12 @@ struct CorporateScreen: View {
                 .disabled(busy)
                 .accessibilityIdentifier("map_input_\(it.sourceKey)")
             HStack(spacing: 10) {
-                Button { Task { await maps.save(sourceKey: it.sourceKey, symbol: draft.wrappedValue, onChanged: {}) } } label: {
-                    Text(busy ? "Saving…" : "Save").font(.system(size: 14, weight: .semibold)).foregroundStyle(RColors.bg)
-                        .padding(.horizontal, 18).padding(.vertical, 9).background(RColors.accent, in: Capsule())
-                }
-                .buttonStyle(.plain).disabled(maps.edit.savingKey != nil).opacity(maps.edit.savingKey != nil ? 0.5 : 1)
+                Button { Task { await maps.save(sourceKey: it.sourceKey, symbol: draft.wrappedValue, onChanged: {}) } } label: { Text(busy ? "Saving…" : "Save") }
+                    .buttonStyle(RPrimaryButtonStyle()).frame(maxWidth: 140).disabled(maps.edit.savingKey != nil)
                 .accessibilityIdentifier("map_save_\(it.sourceKey)")
                 if it.hasUserMap {
                     Button("Remove my map") { removeKey = it.sourceKey }
-                        .font(.system(size: 14)).foregroundStyle(RColors.accent)
+                        .font(.r(14)).foregroundStyle(RColors.accent)
                         .disabled(maps.edit.savingKey != nil)
                         .accessibilityIdentifier("map_remove_\(it.sourceKey)")
                 }

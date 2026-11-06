@@ -5,7 +5,7 @@ struct ComingSoonView: View {
     var note = "This screen arrives in an upcoming update. The Android app already has it."
     var body: some View {
         VStack(spacing: 10) {
-            Text(title).font(.system(size: 22, weight: .semibold)).foregroundStyle(RColors.text)
+            Text(title).font(.r(22, .semibold)).foregroundStyle(RColors.text)
             Muted(note).multilineTextAlignment(.center)
         }
         .padding(32).frame(maxWidth: .infinity, maxHeight: .infinity).background(RColors.bg)
@@ -44,8 +44,10 @@ enum MoreDest: String, CaseIterable, Hashable {
 struct MoreView: View {
     let repo: Repository
     @ObservedObject var session: SessionManager
+    @ObservedObject var lock: AppLock
     @Binding var hideBalances: Bool
     var onSignOut: () -> Void
+    @State private var lockMessage: String?
 
     private var appVersion: String {
         let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
@@ -57,10 +59,9 @@ struct MoreView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("More").font(.system(size: 28, weight: .semibold)).foregroundStyle(RColors.text)
                     if session.state.isAdmin {
                         RCard {
-                            Text("Admin account").font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.accent)
+                            Text("Admin account").font(.r(15, .semibold)).foregroundStyle(RColors.accent)
                             Muted("Admin tools are web-only. Open the web app → More → Admin. For your portfolio on this phone, sign in with your personal account.")
                         }
                     }
@@ -69,11 +70,11 @@ struct MoreView: View {
                             NavigationLink(value: d) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(d.title).font(.system(size: 16)).foregroundStyle(RColors.text)
+                                        Text(d.title).font(.r(16)).foregroundStyle(RColors.text)
                                         Muted(d.subtitle)
                                     }
                                     Spacer()
-                                    Image(systemName: "chevron.right").font(.system(size: 12)).foregroundStyle(RColors.muted)
+                                    Image(systemName: "chevron.right").font(.r(12)).foregroundStyle(RColors.muted)
                                 }.padding(.vertical, 8).contentShape(Rectangle())
                             }
                             .buttonStyle(.plain).accessibilityIdentifier("menu_\(d.rawValue)")
@@ -81,28 +82,59 @@ struct MoreView: View {
                     }
                     RCard {
                         Muted("Signed in as")
-                        Text(session.state.username ?? "").font(.system(size: 18, weight: .semibold)).foregroundStyle(RColors.text)
+                        Text(session.state.username ?? "").font(.r(18, .semibold)).foregroundStyle(RColors.text)
                         Muted("Server")
                         Num(session.state.serverUrl ?? "", size: 13)
                         if session.state.cleartext { Banner(text: "Connection is not encrypted (http).") }
                     }
                     RCard {
-                        SectionTitle("Privacy")
+                        SectionTitle("Privacy & security")
                         Toggle(isOn: $hideBalances) {
                             VStack(alignment: .leading, spacing: 2) { Text("Hide balances").foregroundStyle(RColors.text); Muted("Show •••• instead of amounts") }
                         }.tint(RColors.accent).accessibilityIdentifier("toggle_hide")
+                        Divider().overlay(Color.rHairline)
+                        Toggle(isOn: lockBinding) {
+                            VStack(alignment: .leading, spacing: 2) { Text("Require \(lock.methodName ?? "passcode")").foregroundStyle(RColors.text); Muted("Ask each time you open Rushify") }
+                        }.tint(RColors.accent).accessibilityIdentifier("toggle_lock")
+                        if lock.enabled {
+                            HStack {
+                                Text("Lock").foregroundStyle(RColors.text)
+                                Spacer()
+                                Picker("Lock", selection: Binding(get: { lock.timeout }, set: { lock.setTimeout($0) })) {
+                                    ForEach(AppLock.Timeout.allCases) { Text($0.label).tag($0) }
+                                }.pickerStyle(.menu).tint(RColors.accent).accessibilityIdentifier("lock_timeout")
+                            }
+                        }
+                        if let lockMessage { Banner(text: lockMessage, color: RColors.warn).accessibilityIdentifier("lock_message") }
+                        Divider().overlay(Color.rHairline)
+                        Toggle(isOn: Binding(get: { lock.privacyShield }, set: { lock.setPrivacyShield($0) })) {
+                            VStack(alignment: .leading, spacing: 2) { Text("Hide in app switcher").foregroundStyle(RColors.text); Muted("Cover the screen when you leave the app") }
+                        }.tint(RColors.accent).accessibilityIdentifier("toggle_shield")
                     }
                     Button(action: onSignOut) {
-                        Text("Sign out").font(.system(size: 16, weight: .semibold)).foregroundStyle(RColors.loss)
+                        Text("Sign out").font(.r(16, .semibold)).foregroundStyle(RColors.loss)
                             .frame(maxWidth: .infinity).padding(.vertical, 14).background(RColors.surface, in: RoundedRectangle(cornerRadius: 14))
                     }.accessibilityIdentifier("sign_out")
                     Muted("Rushify for iOS \(appVersion)").frame(maxWidth: .infinity)
                 }
                 .padding(16)
             }
+            .scrollIndicators(.hidden)
             .background(RColors.bg)
-            .navigationDestination(for: MoreDest.self) { destination($0) }
+            .navigationTitle("More").navigationBarTitleDisplayMode(.large)
+            .toolbar { ToolbarItem(placement: .topBarLeading) { if session.state.cleartext { HTTPPill().accessibilityIdentifier("http_chip") } } }
+            .navigationDestination(for: MoreDest.self) { destination($0).toolbar(.hidden, for: .tabBar) }
         }
+    }
+
+    private var lockBinding: Binding<Bool> {
+        Binding(get: { lock.enabled }, set: { on in
+            lockMessage = nil
+            Task {
+                let ok = await lock.setEnabled(on)
+                if !ok && on { lockMessage = lock.methodName == nil ? "Set a passcode in the iPhone Settings app first, then try again." : "Couldn't confirm it's you, so the lock stays off." }
+            }
+        })
     }
 
     @ViewBuilder private func destination(_ d: MoreDest) -> some View {

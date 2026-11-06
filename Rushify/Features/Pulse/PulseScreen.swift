@@ -18,7 +18,6 @@ struct PulseScreen: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Pulse").font(.system(size: 24)).foregroundStyle(RColors.text).accessibilityIdentifier("pulse_title").accessibilityAddTraits(.isHeader)
                 Muted("Market news, watchlists and radar.")
                 HStack(spacing: 8) {
                     ForEach(Array(["Radar", "News", "Watchlists"].enumerated()), id: \.offset) { i, t in
@@ -426,7 +425,7 @@ private struct PulseWatchItemCard: View {
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 6) {
                         Num(it.yahooSymbol, size: 14, bold: true)
-                        if F.isIndexLike(it.quoteType) { Text("INDEX / FUND").font(.system(size: 9)).foregroundStyle(RColors.accent) }
+                        if F.isIndexLike(it.quoteType) { Text("INDEX / FUND").font(.r(9)).foregroundStyle(RColors.accent) }
                     }
                     if let n = it.companyName { Muted(n) }
                     if let n = it.industry { Muted(n) }

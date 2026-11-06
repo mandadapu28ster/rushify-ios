@@ -73,9 +73,9 @@ struct ConnectionsScreen: View {
 
     private func row(_ label: String, _ value: String, _ good: Bool) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            Text(label).font(.system(size: 14)).foregroundStyle(RColors.text)
+            Text(label).font(.r(14)).foregroundStyle(RColors.text)
             Spacer(minLength: 8)
-            Text(value).font(.system(size: 13, weight: .medium)).foregroundStyle(good ? RColors.gain : RColors.warn).multilineTextAlignment(.trailing)
+            Text(value).font(.r(13, .medium)).foregroundStyle(good ? RColors.gain : RColors.warn).multilineTextAlignment(.trailing)
         }.padding(.vertical, 3)
     }
 }

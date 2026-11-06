@@ -12,38 +12,27 @@ struct LoginView: View {
     private var canSubmit: Bool { !username.trimmingCharacters(in: .whitespaces).isEmpty && !password.isEmpty && !busy }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Spacer()
-            Text("Sign in").font(.system(size: 32, weight: .bold)).foregroundStyle(RColors.text)
-            Muted([session.state.serverUrl, version.map { "v\($0)" }].compactMap { $0 }.joined(separator: " · "))
-            if session.state.cleartext { Banner(text: "Not encrypted (http). Your password is sent in clear text.") }
-            if session.state.expired { Banner(text: "Your session expired. Please sign in again.", color: RColors.accent) }
-            field("Username or email", text: $username, id: "username")
-            SecureField("Password", text: $password)
-                .padding(14).background(RColors.bg, in: RoundedRectangle(cornerRadius: 10))
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(RColors.variant))
-                .accessibilityIdentifier("password")
-            if let error { Banner(text: error, color: RColors.loss) }
-            Button(action: submit) {
-                Text(busy ? "Signing in…" : "Sign in").font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(canSubmit ? RColors.bg : RColors.muted)
-                    .frame(maxWidth: .infinity).padding(.vertical, 14)
-                    .background(canSubmit ? RColors.accent : RColors.variant, in: Capsule())
+        ZStack {
+            RAuthBackground()
+            VStack(alignment: .leading, spacing: 14) {
+                Spacer()
+                RushifyMark().frame(width: 64, height: 64).padding(.bottom, 2)
+                Text("Sign in").font(.r(32, .bold)).foregroundStyle(RColors.text)
+                Muted([session.state.serverUrl, version.map { "v\($0)" }].compactMap { $0 }.joined(separator: " · "))
+                if session.state.cleartext { Banner(text: "Not encrypted (http). Your password is sent in clear text.") }
+                if session.state.expired { Banner(text: "Your session expired. Please sign in again.", color: RColors.accent) }
+                RField(title: "Username or email", text: $username, id: "username", contentType: .username).padding(.top, 6)
+                RField(title: "Password", text: $password, id: "password", secure: true, contentType: .password)
+                if let error { Banner(text: error, color: RColors.loss) }
+                Button(action: submit) { Text(busy ? "Signing in…" : "Sign in") }
+                    .buttonStyle(RPrimaryButtonStyle()).disabled(!canSubmit).accessibilityIdentifier("sign_in").padding(.top, 4)
+                    .sensoryFeedback(.error, trigger: error)
+                Button("Change server") { session.clearServer() }.font(.r(14)).foregroundStyle(RColors.muted).padding(.top, 4)
+                Spacer(); Spacer()
             }
-            .disabled(!canSubmit).accessibilityIdentifier("sign_in")
-            Button("Change server") { session.clearServer() }.font(.system(size: 14)).foregroundStyle(RColors.muted).padding(.top, 4)
-            Spacer(); Spacer()
+            .padding(24)
         }
-        .padding(24)
         .task { if let s = session.state.serverUrl { version = (try? await repo.health(baseURL: s))?.version } }
-    }
-
-    private func field(_ title: String, text: Binding<String>, id: String) -> some View {
-        TextField(title, text: text)
-            .textInputAutocapitalization(.never).autocorrectionDisabled().textContentType(.username)
-            .padding(14).background(RColors.bg, in: RoundedRectangle(cornerRadius: 10))
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(RColors.variant))
-            .accessibilityIdentifier(id)
     }
 
     private func submit() {

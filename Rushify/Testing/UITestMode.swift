@@ -5,6 +5,7 @@ import Foundation
 ///   1          signed in (default)
 ///   signedout  fresh install: Connect screen, then Login against the canned server
 ///   expired    signed in, but every authenticated call answers 401 (session expiry)
+///   locked     signed in with the app lock on, so the lock screen shows first
 enum UITestMode {
     static var scenario: String? {
         #if DEBUG
@@ -16,7 +17,7 @@ enum UITestMode {
     static var isActive: Bool { scenario != nil }
 
     /// Session, network and cache for the scenario, or nil outside UI-test mode.
-    static func parts() -> (session: SessionManager, urlSession: URLSession, cache: CacheStore)? {
+    static func parts() -> (session: SessionManager, urlSession: URLSession, cache: CacheStore, lock: AppLock)? {
         #if DEBUG
         guard let scenario else { return nil }
         let session = SessionManager(store: MemoryKeyValueStore(), secrets: MemoryKeyValueStore())
@@ -26,7 +27,10 @@ enum UITestMode {
         }
         let cfg = URLSessionConfiguration.ephemeral
         cfg.protocolClasses = [FixtureURLProtocol.self]
-        return (session, URLSession(configuration: cfg), MemoryCacheStore())
+        let prefs = MemoryKeyValueStore()
+        if scenario == "locked" { prefs.put("lock_enabled", "1") }       // starts on the lock screen
+        let lock = AppLock(store: prefs, authenticator: UITestAuthenticator())
+        return (session, URLSession(configuration: cfg), MemoryCacheStore(), lock)
         #else
         return nil
         #endif
@@ -34,6 +38,18 @@ enum UITestMode {
 }
 
 #if DEBUG
+/// Stands in for Face ID in UI tests. In the `locked` scenario the first (automatic) attempt fails, so the lock screen stays up
+/// with its message and the Unlock button; the next attempt succeeds. Everywhere else it succeeds.
+final class UITestAuthenticator: DeviceAuthenticator {
+    private var calls = 0
+    var methodName: String? { "Face ID" }
+    func authenticate(reason: String) async -> Bool {
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        calls += 1
+        return !(UITestMode.scenario == "locked" && calls == 1)
+    }
+}
+
 /// Serves `UITestFixtures/<METHOD>_<path>.json` (slashes become underscores, numeric ids become `id`).
 final class FixtureURLProtocol: URLProtocol {
     override class func canInit(with request: URLRequest) -> Bool { true }

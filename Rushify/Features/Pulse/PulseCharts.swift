@@ -31,7 +31,7 @@ struct PulseRadarChart: View {
                 ctx.fill(Path(ellipseIn: CGRect(x: o.x - 3.5, y: o.y - 3.5, width: 7, height: 7)), with: .color(RColors.accent))
             }
             for (i, l) in labels.enumerated() {
-                let t = Text("\(l)\n\(i < scores.count ? scores[i] : 0)").font(.system(size: 10)).foregroundColor(RColors.muted)
+                let t = Text("\(l)\n\(i < scores.count ? scores[i] : 0)").font(.r(10)).foregroundColor(RColors.muted)
                 ctx.draw(ctx.resolve(t), at: pt(i, 1, 22), anchor: .center)
             }
         }

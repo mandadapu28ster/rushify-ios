@@ -112,17 +112,22 @@ private struct ManualField: View {
     let id: String
     var number = false
     var hint: String?
+    @FocusState private var focused: Bool
     var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Muted(label)
-            TextField(label, text: $text)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label).font(.r(12, .medium)).foregroundStyle(RColors.muted)
+            TextField("", text: $text, prompt: Text(hint ?? (number ? "0.00" : "")).foregroundStyle(RColors.muted.opacity(0.6)))
+                .focused($focused)
                 .textFieldStyle(.plain)
                 .keyboardType(number ? .numbersAndPunctuation : .default)
                 .textInputAutocapitalization(.never).autocorrectionDisabled()
-                .padding(10).foregroundStyle(RColors.text)
-                .background(RColors.variant, in: RoundedRectangle(cornerRadius: 8))
+                .font(.r(16)).foregroundStyle(RColors.text)
+                .padding(.horizontal, 12).frame(minHeight: 48)
+                .background(RColors.variant, in: RoundedRectangle(cornerRadius: RRadius.control))
+                .overlay(RoundedRectangle(cornerRadius: RRadius.control).strokeBorder(focused ? RColors.accent : Color.clear, lineWidth: 1.5))
+                .animation(.easeOut(duration: 0.15), value: focused)
+                .accessibilityLabel(label)
                 .accessibilityIdentifier(id)
-            if let hint { Muted(hint) }
         }
     }
 }
@@ -151,14 +156,11 @@ private struct ManualButton: View {
     let id: String
     let action: () -> Void
     var body: some View {
-        Button(action: action) {
-            Text(title).font(.system(size: 14, weight: .medium))
-                .foregroundStyle(filled ? (danger ? Color.white : RColors.bg) : (danger ? RColors.loss : RColors.accent))
-                .padding(.horizontal, 16).padding(.vertical, 10)
-                .background(filled ? (danger ? RColors.loss : RColors.accent) : RColors.variant, in: Capsule())
-                .opacity(enabled ? 1 : 0.5)
+        Group {
+            if filled && !danger { Button(action: action) { Text(title) }.buttonStyle(RPrimaryButtonStyle()) }
+            else { Button(action: action) { Text(title) }.buttonStyle(RSecondaryButtonStyle(destructive: danger)) }
         }
-        .buttonStyle(.plain).disabled(!enabled).accessibilityIdentifier(id)
+        .disabled(!enabled).accessibilityIdentifier(id)
     }
 }
 
@@ -169,7 +171,7 @@ private struct ManualFormFrame<Content: View>: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
-                Text(title).font(.system(size: 20)).foregroundStyle(RColors.text)
+                Text(title).font(.r(20)).foregroundStyle(RColors.text)
                 if let e = vm.ui.error { Banner(text: e, color: RColors.loss).accessibilityIdentifier("form_error") }
                 content()
             }
@@ -292,7 +294,7 @@ private struct ManualRemoveForm: View {
     var body: some View {
         ManualFormFrame(title: "Remove this position?", vm: vm) {
             Text("Remove this manual position from the portfolio?\n\nIf you sold the shares, consider using “Record sale” first (sell date and price) so the listed equity chart can track quantity over time. Deleting here removes the line without recording that sale.")
-                .font(.system(size: 14)).foregroundStyle(RColors.text).fixedSize(horizontal: false, vertical: true)
+                .font(.r(14)).foregroundStyle(RColors.text).fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 10) {
                 ManualButton(title: vm.ui.busy ? "Removing…" : "Remove", danger: true, enabled: !vm.ui.busy, id: "remove_ok") { vm.remove(id, onDone: done) }
                 ManualButton(title: "Cancel", filled: false, enabled: !vm.ui.busy, id: "form_cancel", action: cancel)
@@ -356,7 +358,7 @@ private struct ManualSellForm: View {
             Muted("Held: \(Fmt.quantity(row.quantity)). All fields are required; use the GBP price per share from your contract note.")
             ManualField(label: "Quantity sold", text: $qty, id: "f_qty", number: true)
             Button("Sell entire position") { qty = ManualRules.plain(row.quantity) }
-                .font(.system(size: 14, weight: .medium)).foregroundStyle(RColors.accent).accessibilityIdentifier("sell_all")
+                .font(.r(14, .medium)).foregroundStyle(RColors.accent).accessibilityIdentifier("sell_all")
             ManualField(label: "Sell date", text: $date, id: "f_date", hint: "YYYY-MM-DD")
             ManualField(label: "Price per share (GBP)", text: $price, id: "f_price", number: true)
             ManualSaveRow(vm: vm, label: "Record sale", onSave: {

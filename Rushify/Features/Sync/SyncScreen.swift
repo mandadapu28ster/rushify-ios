@@ -27,7 +27,7 @@ struct SyncScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                if showTitle { Text("Sync").font(.system(size: 24, weight: .semibold)).foregroundStyle(RColors.text).syncId("sync_title") }
+                if showTitle { Text("Sync").font(.r(24, .semibold)).foregroundStyle(RColors.text).syncId("sync_title") }
                 AsOfBar(asOf: ui.historyAsOf, error: ui.error, hasData: !ui.history.isEmpty || ui.quota != nil, loading: ui.loading,
                         label: ui.historyAsOf.map { "Updated \(Fmt.stamp($0))" })
                 if ui.quota == nil, let e = ui.error { ErrorState(message: e) { vm.refresh() } }
@@ -65,7 +65,7 @@ struct SyncScreen: View {
         let q = b == .t212 ? ui.quota?.t212 : ui.quota?.snaptrade
         let reason = SyncRules.disabledReason(b, ui, now: hasCooldowns ? max(now, vm.clock()) : vm.clock())
         RCard {
-            Text(b.label).font(.system(size: 16, weight: .semibold)).foregroundStyle(RColors.text)
+            Text(b.label).font(.r(16, .semibold)).foregroundStyle(RColors.text)
             brokerStatus(b)
             if let q { Muted("\(q.remaining) of \(ui.quota?.maxPer24h ?? 3) manual syncs left today (rolling 24 h)") }
             Spacer().frame(height: 8)
@@ -73,12 +73,8 @@ struct SyncScreen: View {
                 ProgressView().progressViewStyle(.linear).tint(RColors.accent).syncId("sync_running_\(b.rawValue)")  // indeterminate: the API reports no percentage
                 Muted("\(b.label) sync in progress…").padding(.top, 4)
             } else {
-                Button { confirm = b } label: {
-                    Text("Sync now").font(.system(size: 15, weight: .semibold)).padding(.horizontal, 18).padding(.vertical, 10)
-                        .foregroundStyle(reason == nil ? Color.black : RColors.muted)
-                        .background(reason == nil ? RColors.accent : RColors.variant, in: Capsule())
-                }
-                .buttonStyle(.plain).disabled(reason != nil).syncId("sync_\(b.rawValue)")
+                Button { confirm = b } label: { Text("Sync now") }
+                    .buttonStyle(RPrimaryButtonStyle()).disabled(reason != nil).syncId("sync_\(b.rawValue)")
                 if let reason { Muted(reason).padding(.top, 4).syncId("sync_reason_\(b.rawValue)") }
             }
         }
@@ -128,11 +124,8 @@ struct SyncScreen: View {
     }
 
     private func portalButton(_ title: String, id: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title).font(.system(size: 15, weight: .semibold)).padding(.horizontal, 18).padding(.vertical, 10)
-                .foregroundStyle(ui.portalBusy ? RColors.muted : Color.black)
-                .background(ui.portalBusy ? RColors.variant : RColors.accent, in: Capsule())
-        }.buttonStyle(.plain).disabled(ui.portalBusy).syncId(id)
+        Button(action: action) { Text(title) }
+            .buttonStyle(RPrimaryButtonStyle()).disabled(ui.portalBusy).syncId(id)
     }
 }
 
@@ -144,10 +137,10 @@ struct MonzoSyncCard: View {
     var body: some View {
         let m = vm.state.data?.value
         RCard {
-            Text("Monzo").font(.system(size: 16, weight: .semibold)).foregroundStyle(RColors.text)
+            Text("Monzo").font(.r(16, .semibold)).foregroundStyle(RColors.text)
             if let m {
                 let ok = m.configured && m.status == "connected"
-                Text(monzoLabel(m)).font(.system(size: 13)).foregroundStyle(ok ? RColors.gain : RColors.warn).accessibilityIdentifier("monzo_status")
+                Text(monzoLabel(m)).font(.r(13)).foregroundStyle(ok ? RColors.gain : RColors.warn).accessibilityIdentifier("monzo_status")
                 if m.status == "connected" {
                     Muted("\(Fmt.plural(m.balanceRows, "balance")) · last synced \(m.lastSyncedAt.map { Fmt.stamp(iso: $0) } ?? "never"). Refreshed daily at 21:00 (London).")
                 }
@@ -159,11 +152,8 @@ struct MonzoSyncCard: View {
                     let syncing = vm.sync.syncing
                     Button { vm.syncNow(onDone: onSynced) } label: {
                         Text(syncing ? "Syncing…" : (m.status == "pending_approval" ? "Check approval / sync" : "Sync now"))
-                            .font(.system(size: 15, weight: .semibold)).padding(.horizontal, 18).padding(.vertical, 10)
-                            .foregroundStyle(syncing ? RColors.muted : Color.black)
-                            .background(syncing ? RColors.variant : RColors.accent, in: Capsule())
                     }
-                    .buttonStyle(.plain).disabled(syncing).padding(.top, 8).accessibilityIdentifier("monzo_sync")
+                    .buttonStyle(RPrimaryButtonStyle()).disabled(syncing).padding(.top, 8).accessibilityIdentifier("monzo_sync")
                 }
                 if let msg = vm.sync.message {
                     Banner(text: msg, color: vm.sync.failed ? RColors.loss : RColors.accent).padding(.top, 8).accessibilityIdentifier("monzo_message")

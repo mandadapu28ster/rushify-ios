@@ -13,13 +13,14 @@ struct HomeView: View {
     @StateObject private var vm: CachedLoader<Dashboard>
     @StateObject private var wealth: HoldingsHomeWealthLoader
     @Environment(\.hideBalances) private var hide
+    @Binding var hideBalances: Bool
     @State private var investmentsOpen = true
     @State private var openSection: String?
     @State private var dismissBusy = false
     @State private var dismissError: String?
 
-    init(repo: Repository, session: SessionManager) {
-        self.repo = repo; self.session = session; events = repo.events
+    init(repo: Repository, session: SessionManager, hideBalances: Binding<Bool>) {
+        self.repo = repo; self.session = session; events = repo.events; _hideBalances = hideBalances
         _wealth = StateObject(wrappedValue: HoldingsHomeWealthLoader(repo: repo))
         _vm = StateObject(wrappedValue: CachedLoader(read: { await repo.dashboardCached() }, fetch: { try await repo.dashboard() }))
     }
@@ -29,28 +30,36 @@ struct HomeView: View {
             scroll
                 .navigationDestination(for: HomeDest.self) { d in
                     switch d {
-                    case .performance: PerformanceScreen(repo: repo, session: session).background(RColors.bg)
-                    case .corporate: CorporateScreen(repo: repo, session: session).background(RColors.bg)
+                    case .performance: PerformanceScreen(repo: repo, session: session).background(RColors.bg).toolbar(.hidden, for: .tabBar)
+                    case .corporate: CorporateScreen(repo: repo, session: session).background(RColors.bg).toolbar(.hidden, for: .tabBar)
                     }
                 }
-                .toolbar(.hidden, for: .navigationBar)
+                .navigationTitle("Home").navigationBarTitleDisplayMode(.large)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) { if session.state.cleartext { HTTPPill().accessibilityIdentifier("http_chip") } }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button { hideBalances.toggle() } label: { Image(systemName: hideBalances ? "eye.slash" : "eye").foregroundStyle(RColors.muted) }
+                            .accessibilityLabel(hideBalances ? "Show balances" : "Hide balances").accessibilityIdentifier("hide_toggle")
+                            .sensoryFeedback(.selection, trigger: hideBalances)
+                    }
+                }
         }
     }
 
     private var scroll: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Home").font(.system(size: 28, weight: .semibold)).foregroundStyle(RColors.text).accessibilityIdentifier("home_title")
                 if session.state.isAdmin { Banner(text: adminReminder, color: RColors.accent) }
                 let d = vm.state.data?.value
                 AsOfBar(asOf: vm.state.data?.fetchedAt, error: vm.state.error, hasData: d != nil, loading: vm.state.loading,
                         label: d.map { "Data as of \(Fmt.stamp(iso: $0.asOf)) · prices are end-of-day/cached" })
                 if let d { content(d) }
                 else if let e = vm.state.error { ErrorState(message: e) { Task { await vm.refresh() } } }
-                else { Muted("Loading your portfolio…") }
+                else { RSkeletonCard(lines: 3); RSkeletonCard(lines: 4); RSkeletonCard(lines: 2) }
             }
             .padding(16)
         }
+        .scrollIndicators(.hidden)
         .refreshable { await vm.refresh() }
         .background(RColors.bg)
         .task { vm.load() }
@@ -58,7 +67,7 @@ struct HomeView: View {
         .onChange(of: events.version) { _, _ in Task { await vm.refresh(); await wealth.refresh() } }
     }
 
-    private func toggle(_ id: String) { openSection = openSection == id ? nil : id }
+    private func toggle(_ id: String) { withAnimation(.snappy(duration: 0.28)) { openSection = openSection == id ? nil : id } }
     private func section<C: View>(_ id: String, _ title: String, _ summary: String, @ViewBuilder _ content: @escaping () -> C) -> some View {
         HomeCollapsible(id: id, title: title, summary: summary, expanded: openSection == id, onToggle: { toggle(id) }, content: content)
     }
@@ -71,7 +80,7 @@ struct HomeView: View {
             Muted("\(Fmt.plural(HomeLogic.listedPositionCount(d.rows), "listed position")) · \(Fmt.plural(d.rows.count, "line")) in total")
         }
         HomeCollapsible(id: "investments", title: "Investments (\(ccy))", summary: HomeLogic.investmentsSummary(d, hide: hide),
-                        expanded: investmentsOpen, onToggle: { investmentsOpen.toggle() }) { investments(d) }
+                        expanded: investmentsOpen, onToggle: { withAnimation(.snappy(duration: 0.28)) { investmentsOpen.toggle() } }) { investments(d) }
         alerts(d)
         pies(d)
         if let sum = HoldingsHomeSummaries.positions(rows: d.rows) {
@@ -87,7 +96,7 @@ struct HomeView: View {
             RCard {
                 SectionTitle("Performance & income")
                 Muted("Growth attribution, benchmark comparison vs FTSE 100 and S&P 100, dividend income and forecast.")
-                Text("Open charts →").font(.system(size: 13)).foregroundStyle(RColors.accent).padding(.top, 4)
+                Text("Open charts →").font(.r(13)).foregroundStyle(RColors.accent).padding(.top, 4)
             }
         }
         .buttonStyle(.plain).accessibilityIdentifier("open_performance")
@@ -100,15 +109,15 @@ struct HomeView: View {
     @ViewBuilder private func investments(_ d: Dashboard) -> some View {
         let ccy = d.baseCurrency
         let pct = HomeLogic.unrealisedPct(pnl: d.totalPnlBase, cost: d.totalCostBase)
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Stat(label: "Listed value", value: Fmt.money(d.totalMarketValueBase, ccy, hide: hide))
             Stat(label: "Cost", value: Fmt.money(d.totalCostBase, ccy, hide: hide))
         }
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Stat(label: "Unrealised P/L", value: Fmt.signedMoney(d.totalPnlBase, ccy, hide: hide) + (hide ? "" : (pct.map { " (\(Fmt.percent($0, signed: true)))" } ?? "")), color: RColors.pnl(d.totalPnlBase))
             Stat(label: "Realised P/L", value: Fmt.signedMoney(d.totalRealisedPnlBase, ccy, hide: hide), color: RColors.pnl(d.totalRealisedPnlBase))
         }
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Stat(label: "XIRR (annual)", value: Fmt.percentFromFraction(d.portfolioXirrAnnual, signed: true), color: RColors.pnl(d.portfolioXirrAnnual))
             Stat(label: "Dividend income", value: Fmt.money(d.dividendIncomeBrokerCashBase ?? d.dividendIncomeTotalBase, ccy, hide: hide))
         }
@@ -137,17 +146,17 @@ struct HomeView: View {
                     Banner(text: "\(n) manual listed lot\(n == 1 ? " is" : "s are") missing a purchase date or total GBP cost. Open each lot in Holdings and choose Edit lot so cost vs gain is correct.")
                 }
                 if d.tickerMapAttentionCount > 0 {
-                    Text("Listings need your attention").font(.system(size: 14, weight: .semibold)).foregroundStyle(RColors.text)
+                    Text("Listings need your attention").font(.r(14, .semibold)).foregroundStyle(RColors.text)
                     Muted("\(Fmt.plural(d.tickerMapAttentionCount, "unresolved ticker")) from your broker. Open Corporate actions → Symbols to confirm and enter the listing to use.")
                     Muted("Dismiss hides this temporarily; the reminder returns until the symbols are resolved.")
                     if let e = dismissError { Banner(text: "Could not dismiss: \(e)", color: RColors.loss) }
                     HStack(spacing: 10) {
                         NavigationLink(value: HomeDest.corporate) {
-                            Text("Review symbols").font(.system(size: 14, weight: .semibold)).foregroundStyle(RColors.bg)
+                            Text("Review symbols").font(.r(14, .semibold)).foregroundStyle(RColors.bg)
                                 .padding(.horizontal, 16).padding(.vertical, 9).background(RColors.accent, in: Capsule())
                         }.buttonStyle(.plain).accessibilityIdentifier("review_symbols")
                         Button(dismissBusy ? "…" : "Dismiss") { dismissTickers() }
-                            .font(.system(size: 14)).foregroundStyle(RColors.accent).disabled(dismissBusy).accessibilityIdentifier("dismiss_symbols")
+                            .font(.r(14)).foregroundStyle(RColors.accent).disabled(dismissBusy).accessibilityIdentifier("dismiss_symbols")
                     }
                 }
             }
@@ -177,7 +186,7 @@ struct HomeView: View {
                                 HStack(spacing: 8) {
                                     Circle().fill(RColors.chart[i % RColors.chart.count]).frame(width: 10, height: 10)
                                     VStack(alignment: .leading, spacing: 1) {
-                                        Text(HomeLogic.bucketLabel(b.bucket)).font(.system(size: 13)).foregroundStyle(RColors.text)
+                                        Text(HomeLogic.bucketLabel(b.bucket)).font(.r(13)).foregroundStyle(RColors.text)
                                         Num("\(Fmt.money(b.valueBase, ccy, hide: hide, scale: 0)) · \(Fmt.percent(b.weightPct, scale: 1))", color: RColors.muted, size: 11)
                                     }
                                 }

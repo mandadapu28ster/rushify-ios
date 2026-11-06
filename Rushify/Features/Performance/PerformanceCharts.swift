@@ -110,13 +110,13 @@ struct PerformanceStackedBarChart: View {
                 .chartYScale(domain: bottom...top)
                 .chartXAxis {
                     AxisMarks(values: xs) { v in
-                        AxisValueLabel(xText(v.as(Double.self))).font(.system(size: 10)).foregroundStyle(RColors.muted)
+                        AxisValueLabel(xText(v.as(Double.self))).font(.r(10)).foregroundStyle(RColors.muted)
                     }
                 }
                 .chartYAxis {
                     AxisMarks(values: PerformanceChartMath.ticks(bottom, top, 3)) { v in
                         AxisGridLine().foregroundStyle(RColors.variant)
-                        AxisValueLabel { if let d = v.as(Double.self) { Text(Fmt.compact(d)).font(.system(size: 10)).foregroundStyle(RColors.muted) } }
+                        AxisValueLabel { if let d = v.as(Double.self) { Text(Fmt.compact(d)).font(.r(10)).foregroundStyle(RColors.muted) } }
                     }
                 }
                 .chartOverlay { proxy in PerformanceSlotOverlay(proxy: proxy, count: n, drag: false, onSelect: onSelect) }
@@ -181,7 +181,7 @@ struct PerformanceLineChart: View {
 
     @AxisContentBuilder private var xAxisMarks: some AxisContent {
         AxisMarks(values: xTicks) { v in
-            AxisValueLabel(xText(v.as(Double.self))).font(.system(size: 10)).foregroundStyle(RColors.muted)
+            AxisValueLabel(xText(v.as(Double.self))).font(.r(10)).foregroundStyle(RColors.muted)
         }
     }
 
@@ -193,7 +193,7 @@ struct PerformanceLineChart: View {
     }
 
     @ViewBuilder private func yLabel(_ d: Double?) -> some View {
-        if let d { Text(Fmt.compact(d)).font(.system(size: 10)).foregroundStyle(RColors.muted) }
+        if let d { Text(Fmt.compact(d)).font(.r(10)).foregroundStyle(RColors.muted) }
     }
 
     private var chart: some View {

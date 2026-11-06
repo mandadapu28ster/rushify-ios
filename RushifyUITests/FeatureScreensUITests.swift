@@ -44,8 +44,7 @@ final class HomeUITests: RushifyUITestCase {
     func testHideBalancesMasksTheAmounts() {
         launch()
         assertText("£337,002.06")
-        tapTab("More"); waitFor(el("toggle_hide")).tap()
-        tapTab("Home")
+        waitFor(el("hide_toggle")).tap()
         assertText("••••")
         XCTAssertFalse(text("£337,002.06").exists)
     }
@@ -61,7 +60,7 @@ final class PulseUITests: RushifyUITestCase {
     func testRadarShowsHealthScopesAndDisclaimer() {
         launch()
         tapTab("Pulse")
-        waitFor(el("pulse_title"))
+        waitFor(app.navigationBars["Pulse"])
         assertText("Test headline", contains: true)
         waitFor(el("scope_overall"))
         scrollTo(el("radar_disclaimer")); waitFor(el("radar_disclaimer"))

@@ -30,7 +30,7 @@ struct AiScreen: View {
 
             if ui.blocked {
                 RCard {
-                    Text(ui.providerLabel.map { "No \($0) API key saved yet." } ?? "AI isn't set up yet").font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.text)
+                    Text(ui.providerLabel.map { "No \($0) API key saved yet." } ?? "AI isn't set up yet").font(.r(15, .semibold)).foregroundStyle(RColors.text)
                     Muted("The assistant uses your own \(ui.providerLabel ?? "Gemini or OpenAI") API key. Add it, and choose the matching provider, in the web app under Settings → Keys, then come back here. Keys are never entered on the phone.")
                 }.padding(16).accessibilityIdentifier("ai_not_configured")
             }
@@ -65,10 +65,10 @@ struct AiScreen: View {
                         if draft.count > 3500 { Muted("\(draft.utf16.count)/\(AiViewModel.maxPrompt)") }
                     }
                     Button { let p = draft; draft = ""; Task { await vm.send(p) } } label: {
-                        Text("Send").font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.bg)
-                            .padding(.horizontal, 18).padding(.vertical, 11).background(RColors.accent, in: Capsule())
+                        Image(systemName: "arrow.up.circle.fill").font(.r(38)).foregroundStyle(canSend ? RColors.accent : RColors.variant)
                     }
-                    .buttonStyle(.plain).disabled(!canSend).opacity(canSend ? 1 : 0.5)
+                    .buttonStyle(RPressStyle()).disabled(!canSend).accessibilityLabel("Send")
+                    .sensoryFeedback(.impact(weight: .light), trigger: ui.messages.count)
                     .accessibilityIdentifier("ai_send")
                 }
             }
@@ -98,7 +98,7 @@ struct AiScreen: View {
             Group {
                 if mine { Text(m.text) } else { Text(AiSimpleMarkdown.attributed(m.text)) }
             }
-            .font(.system(size: 14)).foregroundStyle(RColors.text).textSelection(.enabled)
+            .font(.r(14)).foregroundStyle(RColors.text).textSelection(.enabled)
             .padding(12)
             .background(mine ? RColors.accent.opacity(0.2) : RColors.surface, in: RoundedRectangle(cornerRadius: 14))
             if !mine { Spacer(minLength: 32) }

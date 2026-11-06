@@ -190,7 +190,7 @@ private struct PerformanceGrowthTab: View {
                 }
             }
             Muted("Positive effects stack above zero and negative effects below, not as one running total. The four parts still add up to the period total.").padding(.top, 4)
-            Text(p.label).font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.text).padding(.top, 8).accessibilityIdentifier("growth_selected")
+            Text(p.label).font(.r(15, .semibold)).foregroundStyle(RColors.text).padding(.top, 8).accessibilityIdentifier("growth_selected")
             PerformanceReadoutRow(label: "Total", value: Fmt.signedMoney(p.totalGrowthBase, ccy, hide: hide), color: RColors.pnl(p.totalGrowthBase), bold: true)
             PerformanceReadoutRow(label: "Price (× FX₀)", value: Fmt.signedMoney(p.priceGainBase, ccy, hide: hide), color: RColors.pnl(p.priceGainBase))
             PerformanceReadoutRow(label: "Interaction", value: Fmt.signedMoney(p.interactionGainBase, ccy, hide: hide), color: RColors.pnl(p.interactionGainBase))
@@ -276,7 +276,7 @@ private struct PerformanceEquityCard: View {
             HStack { Muted("Δ MV (first → last)"); Spacer(); Num(Fmt.signedMoney(d, ccy, hide: hide), color: RColors.pnl(d), size: 13).accessibilityIdentifier("equity_delta") }.padding(.top, 4)
         }
         let p = points[at]
-        Text(p.label + (partial ? " · selected accounts only" : "")).font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.text).padding(.top, 6)
+        Text(p.label + (partial ? " · selected accounts only" : "")).font(.r(15, .semibold)).foregroundStyle(RColors.text).padding(.top, 6)
             .accessibilityIdentifier("equity_selected")
         ForEach(Array(series.lines.filter { $0.isTotal }.enumerated()), id: \.offset) { _, ln in
             PerformanceReadoutRow(label: ln.name, value: Fmt.money(ln.values.indices.contains(at) ? ln.values[at] : nil, ccy, hide: hide))
@@ -354,7 +354,7 @@ private struct PerformanceBenchmarksTab: View {
             HStack(spacing: 14) {
                 PerformanceLegendDot(color: RColors.chart[0], text: "Portfolio"); PerformanceLegendDot(color: RColors.chart[2], text: "FTSE 100"); PerformanceLegendDot(color: RColors.chart[3], text: "S&P 100")
             }
-            Text(pt.date).font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.text).padding(.top, 8).accessibilityIdentifier("benchmark_selected")
+            Text(pt.date).font(.r(15, .semibold)).foregroundStyle(RColors.text).padding(.top, 8).accessibilityIdentifier("benchmark_selected")
             PerformanceReadoutRow(label: "Portfolio (index)", value: PerformanceBenchmarkMath.indexText(pt.portfolioIndex))
             PerformanceReadoutRow(label: "FTSE 100", value: PerformanceBenchmarkMath.indexText(pt.ftse100Index))
             PerformanceReadoutRow(label: "S&P 100", value: PerformanceBenchmarkMath.indexText(pt.sp100Index))
@@ -452,7 +452,7 @@ private struct PerformanceDividendsTab: View {
             }
             Muted("Solid = paid, translucent = estimate, shaded = forward estimate.").padding(.top, 2)
             Text(p.label + (p.kind == "current_partial" ? " (so far)" : (p.kind == "forecast_forward" ? " (estimate)" : "")))
-                .font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.text).padding(.top, 8).accessibilityIdentifier("dividend_selected")
+                .font(.r(15, .semibold)).foregroundStyle(RColors.text).padding(.top, 8).accessibilityIdentifier("dividend_selected")
             PerformanceReadoutRow(label: "Total", value: Fmt.money(p.totalBase, ccy, hide: hide), bold: true)
             if let g = p.growthPctPrior { PerformanceReadoutRow(label: "vs prior period", value: Fmt.percent(g, scale: 1, signed: true), color: RColors.pnl(g)) }
             ForEach(Array(PerformanceDividendMath.topContributors(p, 5).enumerated()), id: \.offset) { _, c in
@@ -462,7 +462,7 @@ private struct PerformanceDividendsTab: View {
         if d.note != nil || d.forecastMethod != nil {
             RCard {
                 Button { howTo.toggle() } label: {
-                    HStack { Text("How to read this chart").font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.text); Spacer(); Muted(howTo ? "▲" : "▼") }.contentShape(Rectangle())
+                    HStack { Text("How to read this chart").font(.r(15, .semibold)).foregroundStyle(RColors.text); Spacer(); Muted(howTo ? "▲" : "▼") }.contentShape(Rectangle())
                 }.buttonStyle(.plain).accessibilityIdentifier("dividend_howto")
                 if howTo {
                     if let n = d.note { Muted(n).padding(.top, 4) }

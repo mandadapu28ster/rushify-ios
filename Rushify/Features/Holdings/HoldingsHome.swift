@@ -101,7 +101,7 @@ struct HoldingsHomeSectorsContent: View {
                 HStack(alignment: .center, spacing: 8) {
                     HoldingsDot(color: HoldingsPalette.sectorPie[i % HoldingsPalette.sectorPie.count])
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(s.sector).font(.system(size: 13)).foregroundStyle(RColors.text)
+                        Text(s.sector).font(.r(13)).foregroundStyle(RColors.text)
                         Muted(Fmt.plural(s.holdings.count, "holding"))
                     }
                     Spacer(minLength: 8)
@@ -121,7 +121,7 @@ struct HoldingsHomeSectorsContent: View {
     @ViewBuilder private func detail(_ cur: HoldingsSectorRow) -> some View {
         Button { picked = nil } label: {
             HStack(spacing: 0) {
-                Text("← Back").font(.system(size: 13)).foregroundStyle(RColors.accent)
+                Text("← Back").font(.r(13)).foregroundStyle(RColors.accent)
                 Muted("   Portfolio / \(cur.sector)")
                 Spacer(minLength: 0)
             }.padding(.bottom, 6).contentShape(Rectangle())
@@ -203,7 +203,7 @@ struct HoldingsHomeCustodianContent: View {
                     let isOpen = open.contains(r.name)
                     Button { if isOpen { open.remove(r.name) } else { open.insert(r.name) } } label: {
                         VStack(alignment: .leading, spacing: 3) {
-                            HStack { Text(r.name).font(.system(size: 13, weight: .medium)).foregroundStyle(RColors.text); Spacer(minLength: 8); Num(Fmt.money(r.total, ccy, hide: hide), size: 12) }
+                            HStack { Text(r.name).font(.r(13, .medium)).foregroundStyle(RColors.text); Spacer(minLength: 8); Num(Fmt.money(r.total, ccy, hide: hide), size: 12) }
                             HoldingsHBar(segments: Self.segments(r), scale: maxTotal)
                             Muted("\(Fmt.percent(holdingsRound(r.total * 100 / grand, 1), scale: 1)) of net worth \(isOpen ? "▲" : "▼")")
                             if isOpen { breakdown(r) }
@@ -333,7 +333,7 @@ struct HoldingsHomeWealthContent: View {
                 } else {
                     let pick = min(max(sel ?? (chart.dates.count - 1), 0), chart.dates.count - 1)
                     HoldingsWealthChartView(chart: chart, pick: pick) { sel = $0 }
-                    Text(chart.dates[pick]).font(.system(size: 15, weight: .semibold)).foregroundStyle(RColors.text)
+                    Text(chart.dates[pick]).font(.r(15, .semibold)).foregroundStyle(RColors.text)
                     ForEach(Array(chart.lines.enumerated()), id: \.offset) { i, l in
                         HStack(spacing: 6) {
                             HoldingsDot(color: HoldingsPalette.wealthLines[i % HoldingsPalette.wealthLines.count]); Muted(l.name); Spacer()
@@ -373,13 +373,13 @@ private struct HoldingsWealthChartView: View {
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: 4)) { v in
                 AxisValueLabel {
-                    if let i = v.as(Int.self), i >= 0, i < chart.dates.count { Text(String(chart.dates[i].suffix(5))).font(.system(size: 10)).foregroundStyle(RColors.muted) }
+                    if let i = v.as(Int.self), i >= 0, i < chart.dates.count { Text(String(chart.dates[i].suffix(5))).font(.r(10)).foregroundStyle(RColors.muted) }
                 }
             }
         }
         .chartYAxis {
             AxisMarks { v in
-                AxisValueLabel { if let d = v.as(Double.self) { Text(Fmt.compact(d)).font(.system(size: 10)).foregroundStyle(RColors.muted) } }
+                AxisValueLabel { if let d = v.as(Double.self) { Text(Fmt.compact(d)).font(.r(10)).foregroundStyle(RColors.muted) } }
                 AxisGridLine().foregroundStyle(RColors.variant)
             }
         }
