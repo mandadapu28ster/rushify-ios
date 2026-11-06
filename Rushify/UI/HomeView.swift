@@ -18,6 +18,10 @@ struct HomeView: View {
     @State private var openSection: String?
     @State private var dismissBusy = false
     @State private var dismissError: String?
+    /// The toolbar buttons spell out what they do for a few seconds, then shrink to icons so the bar stays quiet.
+    @State private var labelsShown = true
+    @State private var collapseTask: Task<Void, Never>?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(repo: Repository, session: SessionManager, hideBalances: Binding<Bool>) {
         self.repo = repo; self.session = session; events = repo.events; _hideBalances = hideBalances
@@ -28,6 +32,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             scroll
+                .onAppear { showLabels(for: 4) }
                 .navigationDestination(for: HomeDest.self) { d in
                     switch d {
                     case .performance: PerformanceScreen(repo: repo, session: session).background(RColors.bg).toolbar(.hidden, for: .tabBar)
@@ -36,13 +41,29 @@ struct HomeView: View {
                 }
                 .navigationTitle("Home").navigationBarTitleDisplayMode(.large)
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) { if session.state.cleartext { HTTPPill().accessibilityIdentifier("http_chip") } }
+                    ToolbarItem(placement: .topBarLeading) { if session.state.cleartext { HTTPPill(showText: labelsShown).accessibilityIdentifier("http_chip") } }
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button { hideBalances.toggle() } label: { Image(systemName: hideBalances ? "eye.slash" : "eye").foregroundStyle(RColors.muted) }
+                        Button { hideBalances.toggle(); showLabels(for: 2.5) } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: hideBalances ? "eye.slash" : "eye")
+                                if labelsShown { Text(hideBalances ? "Show" : "Hide").font(.r(13, .medium)).lineLimit(1) }
+                            }.foregroundStyle(RColors.muted).fixedSize()
+                        }
                             .accessibilityLabel(hideBalances ? "Show balances" : "Hide balances").accessibilityIdentifier("hide_toggle")
                             .sensoryFeedback(.selection, trigger: hideBalances)
                     }
                 }
+        }
+    }
+
+    /// Shows the button labels now and folds them back to icons after `seconds`.
+    private func showLabels(for seconds: Double) {
+        collapseTask?.cancel()
+        withAnimation(reduceMotion ? RMotion.fade : RMotion.smooth) { labelsShown = true }
+        collapseTask = Task {
+            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            await MainActor.run { withAnimation(reduceMotion ? RMotion.fade : RMotion.smooth) { labelsShown = false } }
         }
     }
 

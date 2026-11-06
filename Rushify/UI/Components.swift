@@ -58,9 +58,15 @@ struct Banner: View {
 
 /// Slim "not encrypted" marker shown while connected over plain http (replaces a full-width banner on every screen).
 struct HTTPPill: View {
+    /// Home spells it out ("Not secure"); other screens keep just the icon so the bar stays quiet.
+    var showText = false
     var body: some View {
-        Label("Not encrypted (http)", systemImage: "lock.open.fill")
+        HStack(spacing: 5) {
+            Image(systemName: "lock.open.fill")
+            if showText { Text("Not secure").lineLimit(1).transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .leading))) }
+        }
             .font(.r(11, .semibold)).foregroundStyle(RColors.warn)
+            .fixedSize()
             .padding(.horizontal, 10).padding(.vertical, 4)
             .background(RColors.warn.opacity(0.14), in: Capsule())
             .accessibilityLabel("Not encrypted. Avoid public Wi-Fi.")
