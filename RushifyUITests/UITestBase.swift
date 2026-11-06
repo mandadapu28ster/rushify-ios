@@ -36,5 +36,9 @@ class RushifyUITestCase: XCTestCase {
     func scrollTo(_ e: XCUIElement, maxSwipes: Int = 8) {
         var n = 0
         while !(e.exists && e.isHittable) && n < maxSwipes { app.swipeUp(); n += 1 }
+        // "Hittable" can still mean partly under the floating tab bar: scroll the element clear of it.
+        let bottom = app.windows.firstMatch.frame.maxY - 150
+        var m = 0
+        while e.exists && e.frame.maxY > bottom && m < 3 { app.swipeUp(velocity: .slow); m += 1 }
     }
 }
