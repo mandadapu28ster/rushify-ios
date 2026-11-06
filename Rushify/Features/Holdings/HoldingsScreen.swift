@@ -323,7 +323,7 @@ private struct HoldingsMultiHeader: View {
         let pnl: Decimal? = pnls.isEmpty ? nil : pnls.reduce(0, +)
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 2) {
-                HStack { Num(ticker, bold: true); Spacer(minLength: 8); Num(Fmt.money(value, ccy, hide: hide)) }
+                HStack { StockIcon(symbol: ticker); Num(ticker, bold: true); Spacer(minLength: 8); Num(Fmt.money(value, ccy, hide: hide)) }
                 HStack {
                     Muted("\(rows.count) \(noun) · total qty \(Fmt.quantity(rows.reduce(Decimal(0)) { $0 + ($1.quantity ?? 0) })) \(open ? "▲" : "▼")")
                     Spacer(minLength: 8)
@@ -351,6 +351,9 @@ private struct HoldingsRowLine: View {
         let ticker = HoldingsLogic.displayTicker(row, rollup)
         Button { onPick(row, rollup, isPrimary) } label: {
             HStack(alignment: .top) {
+                if HoldingsLogic.isListedAssetKind(row.assetKind) {
+                    StockIcon(symbol: rollup?.yahooTicker.flatMap { $0.isEmpty ? nil : $0 } ?? row.ticker)
+                }
                 VStack(alignment: .leading, spacing: 1) {
                     Num(ticker, bold: true)
                     Muted(lotLabel ?? row.instrumentName ?? row.sector ?? "")
@@ -495,7 +498,12 @@ struct HoldingsDetailView<Actions: View>: View {
             VStack(alignment: .leading, spacing: 16) {
                 // Hero: what it is, what it is worth, and how it is doing
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(HoldingsLogic.displayTicker(r, rollup)).font(.r(26, .bold)).foregroundStyle(RColors.text)
+                    HStack(spacing: 12) {
+                        if HoldingsLogic.isListedAssetKind(r.assetKind) {
+                            StockIcon(symbol: rollup?.yahooTicker.flatMap { $0.isEmpty ? nil : $0 } ?? r.ticker, size: 40)
+                        }
+                        Text(HoldingsLogic.displayTicker(r, rollup)).font(.r(26, .bold)).foregroundStyle(RColors.text)
+                    }
                     Muted([r.instrumentName, r.brokerLabel].compactMap { $0 }.joined(separator: " · "))
                     if !tags.isEmpty { Text(tags.joined(separator: " · ")).font(.r(12, .medium)).foregroundStyle(sold ? RColors.warn : RColors.accent) }
                     HStack(alignment: .firstTextBaseline) {

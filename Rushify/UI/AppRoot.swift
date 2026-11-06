@@ -5,11 +5,14 @@ final class AppContainer: ObservableObject {
     let api: ApiClient
     let repo: Repository
     let lock: AppLock
+    /// nil in UI-test mode, so tests never touch the network for logos.
+    let icons: IconLoader?
 
     init(session: SessionManager? = nil, cache: CacheStore? = nil) {
         if let t = UITestMode.parts() {   // debug-only UI-test scenario: canned responses, no real storage
             self.session = t.session
             lock = t.lock
+            icons = nil
             api = ApiClient(session: t.session, urlSession: t.urlSession)
             repo = Repository(api: api, session: t.session, cache: t.cache)
             return
@@ -17,6 +20,7 @@ final class AppContainer: ObservableObject {
         let s = session ?? SessionManager(store: UserDefaultsStore(), secrets: KeychainStore())
         self.session = s
         lock = AppLock(store: UserDefaultsStore())
+        icons = IconLoader(session: s)
         api = ApiClient(session: s)
         repo = Repository(api: api, session: s, cache: cache ?? FileCacheStore())
     }
@@ -53,6 +57,7 @@ struct AppRoot: View {
         .animation(.easeInOut(duration: 0.2), value: covered)
         .animation(.easeInOut(duration: 0.15), value: lock.shieldVisible)
         .environment(\.hideBalances, hide)
+        .environment(\.iconLoader, container.icons)
         .scrollDismissesKeyboard(.interactively)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .id("\(typeSize)-\(paletteCB)")       // also rebuilds when the colour scheme changes; rebuild once when the user changes the text size, so scaled fonts update
