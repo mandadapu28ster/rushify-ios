@@ -6,20 +6,6 @@ another, the password never stored (only the token, in the Keychain).
 
 Requires iOS 17+, Xcode 16+.
 
-## Status
-
-Every screen of the Android app is ported.
-
-| Area | State |
-| --- | --- |
-| Connect to a server (https, or http with a confirmation), sign in, session expiry, sign out, hide balances | done |
-| Home: net worth, Investments, alerts (review symbols, dismiss), portfolio by sector, net worth by asset class, position size, net worth by broker, wealth over time, data freshness (web-style collapsible sections) | done |
-| Holdings (account groups, lots, rollups, filters, search, sold lots, details), Pulse (radar, news, watchlists), Sync (Trading 212, SnapTrade, Monzo) | done |
-| Performance & income (growth, benchmarks, dividends, daily equity), Corporate actions and symbols, Connections & keys, AI assistant, Change password | done |
-| Add holding, edit lot, record sale, remove, edit values, sector override | done |
-
-Navigation matches Android: three tabs (Home, Pulse, More); Holdings, Sync and the rest open from More.
-
 ## Build and test
 
 ```bash
@@ -76,15 +62,94 @@ gh release create v0.2.0 --generate-notes
 
 ### Installing on an iPhone without a developer account
 
-An iPhone only runs apps signed by Apple's system, so the `.ipa` is signed on your side with a free Apple ID:
+Apple only lets an iPhone run apps that are signed. The `.ipa` on the release page is unsigned, so a free tool signs it with
+**your own Apple Account** while you install it. No paid developer account is needed, and no prior sideloading knowledge either.
+Follow the steps in order.
 
-- **Sideloadly** (Mac or Windows) or **AltStore**: download the `.ipa` from the release, connect the iPhone, sign in with your
-  Apple ID in the tool and install. Turn on Developer Mode on the phone (Settings, Privacy & Security) and trust the
-  developer profile (Settings, General, VPN & Device Management).
-- **Xcode**: open the project, choose your iPhone, set your personal team under Signing & Capabilities and run.
+#### What you need
 
-A free Apple ID app expires after 7 days and has to be reinstalled (AltStore can refresh it automatically). Apple limits free
-accounts to a few apps and App IDs per week. Private repository: testers need read access to the repo to download release files.
+- An iPhone running **iOS 17 or later** (what Rushify needs), with a **passcode** set ([how](https://support.apple.com/en-us/119586)).
+- A computer (Windows 10/11 64-bit, macOS, or Linux) and a **USB cable**. The computer is only needed for the install.
+- An **Apple Account** (Apple ID). A spare one is a good idea.
+- A **Wi-Fi** connection, not mobile data.
+- **LocalDevVPN** on the iPhone, a free app that SideStore-style tools use to refresh your apps
+  ([App Store](https://apps.apple.com/app/localdevvpn/id6755608044)). Open it and tap Connect. Allow the VPN configuration if it asks.
+- **Windows only:** iTunes ([Microsoft Store](https://apps.microsoft.com/store/detail/9PB2MZ1ZMB1S) or
+  [Apple](https://www.apple.com/itunes/download/win64)), so the computer can talk to the iPhone.
+  **Linux only:** `usbmuxd` (`sudo apt install usbmuxd`).
+
+Background reading: [SideStore prerequisites](https://docs.sidestore.io/docs/installation/prerequisites).
+
+#### Step 1: Download the app
+
+1. Open the [Releases page](https://github.com/mandadapu28ster/rushify-ios/releases) and pick the newest release.
+2. Under **Assets**, download `Rushify-<version>.ipa` (not the `.zip`, which is for Mac simulators).
+3. Keep the file somewhere easy to find, such as Downloads.
+
+#### Step 2: Install iloader on the computer
+
+[iloader](https://iloader.app/) is a free, open-source installer that signs and installs an `.ipa` for you.
+Download it only from [iloader.app](https://iloader.app/) or its [GitHub releases](https://github.com/nab138/iloader/releases/latest):
+
+- macOS: [`.dmg`](https://github.com/nab138/iloader/releases/latest/download/iloader-darwin-universal.dmg), or `brew install --cask iloader`
+- Windows: [`.msi`](https://github.com/nab138/iloader/releases/latest/download/iloader-windows-x64.msi) or [`.exe`](https://github.com/nab138/iloader/releases/latest/download/iloader-windows-x64.exe)
+- Linux: [`.deb`](https://github.com/nab138/iloader/releases/latest/download/iloader-linux-amd64.deb),
+  [`.rpm`](https://github.com/nab138/iloader/releases/latest/download/iloader-linux-x86_64.rpm) or
+  [AppImage](https://github.com/nab138/iloader/releases/latest/download/iloader-linux-amd64.AppImage)
+
+#### Step 3: Install Rushify with iloader
+
+1. Plug the iPhone into the computer with the cable. Unlock it and tap **Trust This Computer** if asked.
+2. Make sure LocalDevVPN is connected on the iPhone.
+3. Open iloader. Pick your iPhone from the device list.
+4. Sign in with your Apple Account. If Apple sends a 6-digit code to your devices, type it in.
+5. Choose the option to install an **IPA** and select the `Rushify-<version>.ipa` you downloaded.
+6. Wait until iloader says it finished. Rushify now appears on the Home Screen.
+
+#### Step 4: Allow the app to open
+
+1. **Developer Mode:** on the iPhone open Settings, Privacy & Security, Developer Mode, turn it on and restart when asked.
+   (The switch only shows after the first sideloaded app is installed.)
+2. **Trust yourself as the developer:** Settings, General, VPN & Device Management, tap your Apple Account under
+   *Developer App*, then **Trust**.
+3. Open Rushify and connect it to your server.
+
+#### Keeping it working
+
+A free Apple Account app **expires after 7 days** and stops opening until it is signed again. You do not need to repeat the
+computer steps each week. Use [SideStore](https://docs.sidestore.io/docs/installation/prerequisites) to look after it:
+
+**Steps 2 and 3 are a one-time activity.** Do them once, using iloader to install SideStore on your iPhone (choose
+SideStore in iloader instead of the Rushify IPA, or in addition to it). After that, **once you are signed in to SideStore with your
+Apple Account, it refreshes your apps by itself every 7 days**, with no computer needed. Just keep LocalDevVPN connected
+and your iPhone on Wi-Fi when a refresh is due.
+
+**Installing a new version of Rushify later (no computer needed):**
+
+1. On your iPhone, open the [Releases page](https://github.com/mandadapu28ster/rushify-ios/releases) in Safari and tap
+   `Rushify-<version>.ipa` under **Assets** to download it.
+2. Open SideStore, go to **My Apps**, tap **+**, and choose the downloaded `.ipa` (it is in the Files app, under Downloads).
+3. Connect LocalDevVPN first. SideStore signs and installs the new version over the old one, and your settings and sign-in stay.
+
+So you can skip Steps 2 and 3 for every future update. Apple also limits free accounts to a few apps and App IDs per week.
+
+#### Sign-in errors
+
+If iloader or SideStore will not accept your Apple Account, follow the community fix in
+[SideStore discussion #1666](https://github.com/orgs/SideStore/discussions/1666#discussioncomment-19094443). In short:
+
+- Switch SideStore to a different **anisette server** (Settings, Anisette Servers). The default one is the usual cause.
+  Turning off *On-Device Anisette* first can help.
+- Try again with your Apple ID and password. Use a dedicated Apple Account if you can.
+- Still stuck? See [SideStore troubleshooting](https://docs.sidestore.io/docs/troubleshooting) or
+  [iloader issues](https://github.com/nab138/iloader/issues).
+
+#### Alternatives
+
+- [Sideloadly](https://sideloadly.io/) or [AltStore](https://altstore.io/): same idea, different tool.
+- **Xcode** (Mac): open the project, choose your iPhone, set your personal team under Signing & Capabilities and run.
+
+Private repository: testers need read access to the repo to download release files.
 
 ### TestFlight (needs the paid Apple Developer Program)
 
